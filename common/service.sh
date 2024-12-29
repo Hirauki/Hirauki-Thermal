@@ -171,18 +171,18 @@ ext() {
     fi
 }
 	
-ext 6000000 /sys/class/power_supply/usb/current_max
-ext 6100000 /sys/class/power_supply/usb/hw_current_max
-ext 6100000 /sys/class/power_supply/usb/pd_current_max
-ext 6100000 /sys/class/power_supply/usb/ctm_current_max
-ext 6000000 /sys/class/power_supply/usb/sdp_current_max
-ext 6000000 /sys/class/power_supply/main/current_max
-ext 6100000 /sys/class/power_supply/main/constant_charge_current_max
-ext 6000000 /sys/class/power_supply/battery/current_max
-ext 6100000 /sys/class/power_supply/battery/constant_charge_current_max
-ext 6500000 /sys/class/qcom-battery/restricted_current
-ext 6000000 /sys/class/power_supply/pc_port/current_max
-ext 6500000 /sys/class/power_supply/battery/constant_charge_current_max
+ext 5000000 /sys/class/power_supply/usb/current_max
+ext 5100000 /sys/class/power_supply/usb/hw_current_max
+ext 5100000 /sys/class/power_supply/usb/pd_current_max
+ext 5100000 /sys/class/power_supply/usb/ctm_current_max
+ext 5000000 /sys/class/power_supply/usb/sdp_current_max
+ext 5000000 /sys/class/power_supply/main/current_max
+ext 5100000 /sys/class/power_supply/main/constant_charge_current_max
+ext 5000000 /sys/class/power_supply/battery/current_max
+ext 5100000 /sys/class/power_supply/battery/constant_charge_current_max
+ext 5500000 /sys/class/qcom-battery/restricted_current
+ext 5000000 /sys/class/power_supply/pc_port/current_max
+ext 5500000 /sys/class/power_supply/battery/constant_charge_current_max
 
 # CPU Governor settings for LITTLE cores (cpu0-3) (thx to @Bias_khaliq)
   for cpu in /sys/devices/system/cpu/cpu[0-3]; do
