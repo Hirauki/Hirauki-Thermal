@@ -6,6 +6,7 @@
 - Switch LMK string for better backup
 - Same as before changelog
 - Change value charging and limit to 48 temp
+- Bringback SkiaGL-Threaded for better render and performance
 
 # CL - Hirauki Thermal
 
