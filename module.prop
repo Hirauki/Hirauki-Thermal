@@ -5,3 +5,4 @@ versionCode=1
 author=Hirauki
 description=Not bad. An adequate Performance.
 Device=Universal
+updateJson=https://raw.githubusercontent.com/Hirauki/Hirauki-Thermal/refs/heads/main/update.json
