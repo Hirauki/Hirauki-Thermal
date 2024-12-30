@@ -12,7 +12,7 @@ fi
 print_modname() {
   ui_print "      H I R A U K I       T H E R M A L ʕ⁠·⁠ᴥ⁠·⁠ʔ     "
   sleep 1
-  ui_print "Codename           : Wis'Adel               "
+  ui_print "Codename           : Qingque               "
   sleep 1
   ui_print "Created            : Hirauki"
   sleep 1
