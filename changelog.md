@@ -7,7 +7,8 @@
 - Fix FC on old build and bring string from old build
 - Change temp at 50
 - Update with new surfaceflinger
-- 
+- Set ZRAM as default ROM
+
 ## 7.1 (2024-12-29)
 - Update to 7.1 Lucia Crimson
 - Use Hirauki Thermal based
