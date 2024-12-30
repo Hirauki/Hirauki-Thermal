@@ -2,7 +2,6 @@
 MODDIR ${0%/*}
 # Set zram configurations
 setprop ro.vendor.qti.config.zram true
-echo 4096M >/sys/block/zram0/disksize
 # This script will be executed in post-fs-data mode
 if
 write() {
