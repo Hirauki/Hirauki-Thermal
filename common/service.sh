@@ -19,7 +19,7 @@ wait_until_login
 # Sleep some time to make sure init is completed
 sleep 10
 
-su -lp 2000 -c "cmd notification post -S bigtext -t 'Lucia Crimson' 'Tag' 'Maintain your pace and resilience against my moves.'"
+su -lp 2000 -c "cmd notification post -S bigtext -t 'Qingque' 'Tag' 'Alright, no more teasing, okay?'"
 
 ####################################
 # Tweaking Android (thx to Melody Script https://github.com/ionuttbara/melody_android)
@@ -53,6 +53,15 @@ su -c "stop logcat, logcatd, logd, tcpdump, cnss_diag, statsd, traced, idd-logre
 ####################################
 # Kill sensor
 ####################################
+
+	# Thermal governor
+	chmod 0644 /sys/class/thermal/thermal_zone0/available_policies
+	if [[ $(cat /sys/class/thermal/thermal_zone0/available_policies) == *step_wise* ]]; then
+		for thermal in /sys/class/thermal/thermal_zone*; do
+			chmod 0644 ${thermal}/policy
+			echo "step_wise" >${thermal}/policy
+		done
+	fi
 for thermal in $(resetprop | awk -F '[][]' '/thermal|init.svc.vendor.thermal-hal/ {print $2}'); do
   if [[ $(resetprop "$thermal") == "running" || $(resetprop "$thermal") == "restarting" ]]; then
     # Extract service name without the prefix
@@ -93,9 +102,11 @@ find /sys/devices/virtual/thermal -type f -exec chmod 000 {} +
 sleep 1
 # Thermal Stop Setprop Methode
 setprop init.svc.android.thermal-hal stopped
+setprop sys.thermal.enable false
 # Thermal Stop Semi-auto Methode
-sleep 10
 stop logd
+sleep 1
+stop android.thermal-hal
 sleep 1
 stop vendor.thermal-engine
 sleep 1
@@ -104,6 +115,10 @@ sleep 1
 stop vendor.thermal-manager
 sleep 1
 stop vendor.thermal-hal-2-0
+sleep 1
+stop vendor.semc.hardware.thermal-1-0
+sleep 1
+stop vendor.semc.hardware.thermal-1-1
 sleep 1
 stop vendor.thermal-symlinks
 sleep 1
@@ -123,25 +138,15 @@ stop sec-thermal-1-0
 sleep 1
 stop debug_pid.sec-thermal-1-0
 sleep 1
+stop vendor.thermal-hal-2-0.mtk
+sleep 1
 stop thermal-engine
-sleep 1
-stop vendor.semc.hardware.thermal-1-0
-sleep 1
-stop vendor.semc.hardware.thermal-1-1
 sleep 1
 stop vendor.thermal-hal-1-0
 sleep 1
 stop vendor-thermal-1-0
 sleep 1
-stop android.thermal-hal
-sleep 1
-stop vendor.thermal-hal-2-0.mtk
-sleep 1
 stop thermal-hal
-sleep 1
-stop thermal_core
-sleep 1
-stop android.thermal-hal
 sleep 3
 # Disable Via Props
   if resetprop dalvik.vm.dexopt.thermal-cutoff | grep -q '2'; then
@@ -275,6 +280,25 @@ echo "0" > /proc/sys/debug/exception-trace
 echo "0" > /proc/sys/kernel/sched_schedstats
 
 ####################################
+# Kernel Tweaks
+####################################
+echo 0 > /proc/sys/kernel/sched_boost
+echo 0 > /sys/kernel/msm_thermal/enabled
+echo "0" > /proc/sys/kernel/sched_child_runs_first
+echo "0" > /proc/sys/kernel/sched_schedstats
+echo "0" > /proc/sys/kernel/sched_boost
+echo "0" > /proc/sys/kernel/sched_tunable_scaling
+echo "1" > /proc/sys/kernel/timer_migration
+echo "1" > /proc/sys/kernel/sched_autogroup_enabled
+echo "25" > /proc/sys/kernel/perf_cpu_time_max_percent
+echo "32" > /proc/sys/kernel/sched_nr_migrate
+echo "55" > /proc/sys/kernel/perf_cpu_time_max_percent
+echo "95" > /proc/sys/kernel/sched_downmigrate
+echo "160" > /proc/sys/kernel/sched_group_upmigrate
+echo "570" > /proc/sys/kernel/perf_event_mlock_kb
+echo "24000" > /proc/sys/kernel/perf_event_max_sample_rate
+
+####################################
 # Disable Kernel Panic
 ####################################
   write /proc/sys/kernel/panic "0"
@@ -310,9 +334,23 @@ done;
   write /sys/kernel/printk_mode/printk_mode "0"
 
 # I/O
-for queue in /sys/block/*/queue; do
+for queue in /sys/block/sd*/queue
+do
     echo "0" > "$queue/iostats"
-    echo "128" > "$queue/nr_requests"
+done ;
+
+####################################
+# Scheduler
+####################################
+for queue in $sda $sdb $sdc $sdd $sde $sdf; do
+    echo "cfq" > $queue/queue/scheduler
+    echo "2" > $queue/queue/rq_affinity
+    echo "0" > $queue/queue/iostats
+    echo "128" > $queue/queue/read_ahead_kb
+    echo "0" > $queue/queue/add_random
+    echo "64" > $queue/queue/iosched/quantum
+    echo "1" > $queue/queue/iosched/group_idle
+    echo "0" > $queue/queue/iosched/slice_idle
 done
 
 ####################################
@@ -338,4 +376,12 @@ echo 0 > /sys/kernel/debug/rpm_log
 echo "0:1800000" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_freq
 echo "230" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_ms
 
-su -lp 2000 -c "cmd notification post -S bigtext -t 'Lucia Crimson' 'Tag' 'Amplify the power. Let's keep the momentum going.'"
+#Little tweaks
+echo 0 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/down_rate_limit_us;
+echo 1785600 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/hispeed_freq;
+echo 95 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/hispeed_load;
+echo 1 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/pl;
+echo 0 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/up_rate_limit_us;
+done
+
+su -lp 2000 -c "cmd notification post -S bigtext -t 'Qingque' 'Tag' 'A free performance by Little Gui? There's no way I missing that.'"
