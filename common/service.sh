@@ -53,15 +53,6 @@ su -c "stop logcat, logcatd, logd, tcpdump, cnss_diag, statsd, traced, idd-logre
 ####################################
 # Kill sensor
 ####################################
-
-	# Thermal governor
-	chmod 0644 /sys/class/thermal/thermal_zone0/available_policies
-	if [[ $(cat /sys/class/thermal/thermal_zone0/available_policies) == *step_wise* ]]; then
-		for thermal in /sys/class/thermal/thermal_zone*; do
-			chmod 0644 ${thermal}/policy
-			echo "step_wise" >${thermal}/policy
-		done
-	fi
 for thermal in $(resetprop | awk -F '[][]' '/thermal|init.svc.vendor.thermal-hal/ {print $2}'); do
   if [[ $(resetprop "$thermal") == "running" || $(resetprop "$thermal") == "restarting" ]]; then
     # Extract service name without the prefix
@@ -340,20 +331,6 @@ do
 done ;
 
 ####################################
-# Scheduler
-####################################
-for queue in $sda $sdb $sdc $sdd $sde $sdf; do
-    echo "cfq" > $queue/queue/scheduler
-    echo "2" > $queue/queue/rq_affinity
-    echo "0" > $queue/queue/iostats
-    echo "128" > $queue/queue/read_ahead_kb
-    echo "0" > $queue/queue/add_random
-    echo "64" > $queue/queue/iosched/quantum
-    echo "1" > $queue/queue/iosched/group_idle
-    echo "0" > $queue/queue/iosched/slice_idle
-done
-
-####################################
 # Surfaceflinger
 ####################################
 setprop debug.sf.hw 1
@@ -375,13 +352,5 @@ echo 0 > /sys/kernel/debug/rpm_log
 #CAF Tweak
 echo "0:1800000" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_freq
 echo "230" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_ms
-
-#Little tweaks
-echo 0 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/down_rate_limit_us;
-echo 1785600 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/hispeed_freq;
-echo 95 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/hispeed_load;
-echo 1 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/pl;
-echo 0 > /sys/devices/system/cpu/cpufreq/policy0/schedutil/up_rate_limit_us;
-done
 
 su -lp 2000 -c "cmd notification post -S bigtext -t 'Qingque' 'Tag' 'A free performance by Little Gui? There's no way I missing that.'"
