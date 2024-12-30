@@ -1,6 +1,6 @@
 # CL - Hirauki Thermal
 
-## 7.2 (2024-12-30)
+## 7.2 (2024-12-31)
 - Update to 7.2 Qingque
 - Switch LMK string for better backup
 - Change value charging and limit to 48 temp
