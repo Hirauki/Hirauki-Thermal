@@ -22,30 +22,6 @@ sleep 10
 su -lp 2000 -c "cmd notification post -S bigtext -t 'Qingque' 'Tag' 'Alright, no more teasing, okay?'"
 
 ####################################
-# Tweaking Android (thx to Melody Script https://github.com/ionuttbara/melody_android)
-####################################
-cmd settings put global activity_starts_logging_enabled 0
-cmd settings put global ble_scan_always_enabled 0
-cmd settings put global hotword_detection_enabled 0
-cmd settings put global mobile_data_always_on 0
-cmd settings put global network_recommendations_enabled 0
-cmd settings put global wifi_scan_always_enabled 0
-cmd settings put secure adaptive_sleep 0
-cmd settings put secure screensaver_activate_on_dock 0
-cmd settings put secure screensaver_activate_on_sleep 0
-cmd settings put secure screensaver_enabled 0
-cmd settings put secure send_action_app_error 0
-cmd settings put system air_motion_engine 0
-cmd settings put system air_motion_wake_up 0
-cmd settings put system intelligent_sleep_mode 0
-cmd settings put system master_motion 0
-cmd settings put system motion_engine 0
-cmd settings put system nearby_scanning_enabled 0
-cmd settings put system nearby_scanning_permission_allowed 0
-cmd settings put system rakuten_denwa 0
-cmd settings put system send_security_reports 0
-
-####################################
 # Services
 ####################################
 su -c "stop logcat, logcatd, logd, tcpdump, cnss_diag, statsd, traced, idd-logreader, idd-logreadermain, stats dumpstate, aplogd, tcpdump, vendor.tcpdump, vendor_tcpdump, vendor.cnss_diag"
@@ -96,8 +72,8 @@ setprop init.svc.android.thermal-hal stopped
 setprop sys.thermal.enable false
 # Thermal Stop Semi-auto Methode
 stop logd
-sleep 1
-stop android.thermal-hal
+sleep 10
+stop logd
 sleep 1
 stop vendor.thermal-engine
 sleep 1
@@ -106,10 +82,6 @@ sleep 1
 stop vendor.thermal-manager
 sleep 1
 stop vendor.thermal-hal-2-0
-sleep 1
-stop vendor.semc.hardware.thermal-1-0
-sleep 1
-stop vendor.semc.hardware.thermal-1-1
 sleep 1
 stop vendor.thermal-symlinks
 sleep 1
@@ -129,15 +101,25 @@ stop sec-thermal-1-0
 sleep 1
 stop debug_pid.sec-thermal-1-0
 sleep 1
-stop vendor.thermal-hal-2-0.mtk
-sleep 1
 stop thermal-engine
+sleep 1
+stop vendor.semc.hardware.thermal-1-0
+sleep 1
+stop vendor.semc.hardware.thermal-1-1
 sleep 1
 stop vendor.thermal-hal-1-0
 sleep 1
 stop vendor-thermal-1-0
 sleep 1
+stop android.thermal-hal
+sleep 1
+stop vendor.thermal-hal-2-0.mtk
+sleep 1
 stop thermal-hal
+sleep 1
+stop thermal_core
+sleep 1
+stop android.thermal-hal
 sleep 3
 # Disable Via Props
   if resetprop dalvik.vm.dexopt.thermal-cutoff | grep -q '2'; then
@@ -180,30 +162,6 @@ ext 5500000 /sys/class/qcom-battery/restricted_current
 ext 5000000 /sys/class/power_supply/pc_port/current_max
 ext 5500000 /sys/class/power_supply/battery/constant_charge_current_max
 
-# CPU Governor settings for LITTLE cores (cpu0-3) (thx to @Bias_khaliq)
-  for cpu in /sys/devices/system/cpu/cpu[0-3]; do
-    min_freq=$(cat $cpu/cpufreq/cpuinfo_min_freq)
-    max_freq=$(cat $cpu/cpufreq/cpuinfo_max_freq)
-    mid_freq=$(calculate_mid_freq $cpu)
-     
-     write $cpu/cpufreq/schedutil/hispeed_load "75"
-     write $cpu/cpufreq/schedutil/iowait_boost_enable "0"
-     write $cpu/cpufreq/schedutil/up_rate_limit_us "300"
-     write $cpu/cpufreq/schedutil/down_rate_limit_us "2500"
-     write $cpu/cpufreq/scaling_min_freq "$mid_freq"
-     write $cpu/cpufreq/scaling_max_freq "$max_freq"
-  done
-  
-# CPU Governor settings for big cores (cpu4-7) (thx to @Bias_khaliq)
-  for cpu in /sys/devices/system/cpu/cpu[4-7]; do
-    min_freq=$(cat $cpu/cpufreq/cpuinfo_min_freq)
-    max_freq=$(cat $cpu/cpufreq/cpuinfo_max_freq)
-    mid_freq=$(calculate_mid_freq $cpu)
-  
-     write $cpu/cpufreq/scaling_min_freq "$mid_freq"
-     write $cpu/cpufreq/scaling_max_freq "$max_freq"
-  done
-
 # GPU Tweaks
 echo "msm-adreno-tz" > /sys/class/kgsl/kgsl-3d0/devfreq/governor
 echo 0 > /sys/class/kgsl/kgsl-3d0/throttling
@@ -245,6 +203,13 @@ rm -rf /data/system/usagestats/*
 rm -rf /data/log/*
 rm -rf /sys/kernel/debug/*
 
+####################################
+# Wi-Fi Logs (thx to @LeanHijosdesusMadres)
+####################################
+rm -rf /data/vendor/wlan_logs
+touch /data/vendor/wlan_logs
+chmod 000 /data/vendor/wlan_logs
+
 #fstrim
 fstrim -v /cache
 fstrim -v /system
@@ -263,43 +228,29 @@ for i in "debug_mask" "log_level*" "debug_level*" "*debug_mode" "enable_ramdumps
     for o in $(find /sys/ -type f -name "$i"); do
         echo "0" > "$o"
     done
+done
 
-echo "1" > /sys/module/spurious/parameters/noirqdebug
-echo "0" > /sys/kernel/debug/sde_rotator0/evtlog/enable
-echo "0" > /sys/kernel/debug/dri/0/debug/enable
-echo "0" > /proc/sys/debug/exception-trace
-echo "0" > /proc/sys/kernel/sched_schedstats
+for sys in /sys; do
+    echo "1" > "$sys/module/spurious/parameters/noirqdebug"
+    echo "0" > "$sys/kernel/debug/sde_rotator0/evtlog/enable"
+	echo "0" > "$sys/kernel/debug/dri/0/debug/enable"
+	echo "0" > "$sys/module/rmnet_data/parameters/rmnet_data_log_level"
+done
 
-####################################
-# Kernel Tweaks
-####################################
-echo 0 > /proc/sys/kernel/sched_boost
-echo 0 > /sys/kernel/msm_thermal/enabled
-echo "0" > /proc/sys/kernel/sched_child_runs_first
-echo "0" > /proc/sys/kernel/sched_schedstats
-echo "0" > /proc/sys/kernel/sched_boost
-echo "0" > /proc/sys/kernel/sched_tunable_scaling
-echo "1" > /proc/sys/kernel/timer_migration
-echo "1" > /proc/sys/kernel/sched_autogroup_enabled
-echo "25" > /proc/sys/kernel/perf_cpu_time_max_percent
-echo "32" > /proc/sys/kernel/sched_nr_migrate
-echo "55" > /proc/sys/kernel/perf_cpu_time_max_percent
-echo "95" > /proc/sys/kernel/sched_downmigrate
-echo "160" > /proc/sys/kernel/sched_group_upmigrate
-echo "570" > /proc/sys/kernel/perf_event_mlock_kb
-echo "24000" > /proc/sys/kernel/perf_event_max_sample_rate
+echo "0" > "/proc/sys/debug/exception-trace"
+echo "0" > "/proc/sys/kernel/sched_schedstats"
 
 ####################################
 # Disable Kernel Panic
 ####################################
-  write /proc/sys/kernel/panic "0"
-  write /proc/sys/kernel/panic_on_oops "0"
-  write /proc/sys/kernel/panic_on_warn "0"
-  write /proc/sys/kernel/panic_on_rcu_stall "0"
-  write /sys/module/kernel/parameters/panic "0"
-  write /sys/module/kernel/parameters/panic_on_warn "0"
-  write /sys/module/kernel/parameters/pause_on_oops "0"
-  write /sys/module/kernel/panic_on_rcu_stall "0"
+echo "0" > /proc/sys/kernel/panic
+echo "0" > /proc/sys/kernel/panic_on_oops
+echo "0" > /proc/sys/kernel/panic_on_rcu_stall
+echo "0" > /proc/sys/kernel/panic_on_warn
+echo "0" > /sys/module/kernel/parameters/panic
+echo "0" > /sys/module/kernel/parameters/panic_on_warn
+echo "0" > /sys/module/kernel/parameters/panic_on_oops
+echo "0" > /sys/vm/panic_on_oom
 
 ####################################
 #Kernel Reclaim Threads
@@ -320,15 +271,22 @@ done;
 ####################################
 # Printk (thx to KNTD-reborn)
 ####################################
-  write /proc/sys/kernel/printk "0 0 0 0"
-  write /proc/sys/kernel/printk_devkmsg "off"
-  write /sys/kernel/printk_mode/printk_mode "0"
+echo "0 0 0 0" > "/proc/sys/kernel/printk"
+echo "0" > "/sys/kernel/printk_mode/printk_mode"
+echo "0" > "/sys/module/printk/parameters/cpu"
+echo "0" > "/sys/module/printk/parameters/pid"
+echo "0" > "/sys/module/printk/parameters/printk_ratelimit"
+echo "0" > "/sys/module/printk/parameters/time"
+echo "1" > "/sys/module/printk/parameters/console_suspend"
+echo "1" > "/sys/module/printk/parameters/ignore_loglevel"
+echo "off" > "/proc/sys/kernel/printk_devkmsg"
 
+####################################
 # I/O
-for queue in /sys/block/sd*/queue
-do
+####################################
+for queue in /sys/block/*/queue; do
     echo "0" > "$queue/iostats"
-done ;
+done
 
 ####################################
 # Surfaceflinger
