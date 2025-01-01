@@ -69,7 +69,10 @@ find /sys/devices/virtual/thermal -type f -exec chmod 000 {} +
 sleep 1
 # Thermal Stop Setprop Methode
 setprop init.svc.android.thermal-hal stopped
-setprop sys.thermal.enable false
+setprop init.svc.vendor.semc.hardware.thermal-1-0 stopped
+setprop init.svc.vendor.semc.hardware.thermal-1-1 stopped
+setprop init.svc.vendor.thermal-hal-2-0.mtk stopped
+setprop init.svc.thermal_core stopped
 # Thermal Stop Semi-auto Methode
 stop logd
 sleep 10
@@ -163,14 +166,20 @@ ext 5000000 /sys/class/power_supply/pc_port/current_max
 ext 5500000 /sys/class/power_supply/battery/constant_charge_current_max
 
 # GPU Tweaks
-echo "msm-adreno-tz" > /sys/class/kgsl/kgsl-3d0/devfreq/governor
+if [ -e /sys/class/kgsl/kgsl-3d0/devfreq/governor ]; then
+  echo "msm-adreno-tz" > /sys/class/kgsl/kgsl-3d0/devfreq/governor
+fi
+
+find /sys/devices/system/cpu -maxdepth 1 -name 'cpu?' | while IFS= read -r cpu; do
+  echo performance > "$cpu/cpufreq/scaling_governor"
+done
+sleep 10
 echo 0 > /sys/class/kgsl/kgsl-3d0/throttling
 echo 0 > /sys/class/kgsl/kgsl-3d0/bus_split
 echo 1 > /sys/class/kgsl/kgsl-3d0/force_no_nap
 echo 1 > /sys/class/kgsl/kgsl-3d0/force_rail_on
 echo 1 > /sys/class/kgsl/kgsl-3d0/force_bus_on
 echo 1 > /sys/class/kgsl/kgsl-3d0/force_clk_on
-
 #unity
 echo "com.miHoYo., com.activision., UnityMain, libunity.so, libil2cpp.so, libfb.so" > /proc/sys/kernel/sched_lib_name
 echo "240" > /proc/sys/kernel/sched_lib_mask_force
@@ -203,13 +212,6 @@ rm -rf /data/system/usagestats/*
 rm -rf /data/log/*
 rm -rf /sys/kernel/debug/*
 
-####################################
-# Wi-Fi Logs (thx to @LeanHijosdesusMadres)
-####################################
-rm -rf /data/vendor/wlan_logs
-touch /data/vendor/wlan_logs
-chmod 000 /data/vendor/wlan_logs
-
 #fstrim
 fstrim -v /cache
 fstrim -v /system
@@ -228,17 +230,12 @@ for i in "debug_mask" "log_level*" "debug_level*" "*debug_mode" "enable_ramdumps
     for o in $(find /sys/ -type f -name "$i"); do
         echo "0" > "$o"
     done
-done
 
-for sys in /sys; do
-    echo "1" > "$sys/module/spurious/parameters/noirqdebug"
-    echo "0" > "$sys/kernel/debug/sde_rotator0/evtlog/enable"
-	echo "0" > "$sys/kernel/debug/dri/0/debug/enable"
-	echo "0" > "$sys/module/rmnet_data/parameters/rmnet_data_log_level"
-done
-
-echo "0" > "/proc/sys/debug/exception-trace"
-echo "0" > "/proc/sys/kernel/sched_schedstats"
+echo "1" > /sys/module/spurious/parameters/noirqdebug
+echo "0" > /sys/kernel/debug/sde_rotator0/evtlog/enable
+echo "0" > /sys/kernel/debug/dri/0/debug/enable
+echo "0" > /proc/sys/debug/exception-trace
+echo "0" > /proc/sys/kernel/sched_schedstats
 
 ####################################
 # Disable Kernel Panic
@@ -260,26 +257,23 @@ change_task_nice "oom_reaper" "-2"
 change_task_affinity "kswapd" "7f"
 change_task_affinity "oom_reaper" "7f"
 
-# Disable sysctl.conf to prevent ROM interference #1 
+####################################
+# Printk and Disable sysctl.conf (thx to KNTD-reborn)
+####################################
 if [ -e /system/etc/sysctl.conf ]; then
   mount -o remount,rw /system;
   mv /system/etc/sysctl.conf /system/etc/sysctl.conf.bak;
-  mount -o remount,rw /system;
+  mount -o remount,ro /system;
 fi;
-done;
-
-####################################
-# Printk (thx to KNTD-reborn)
-####################################
-echo "0 0 0 0" > "/proc/sys/kernel/printk"
-echo "0" > "/sys/kernel/printk_mode/printk_mode"
-echo "0" > "/sys/module/printk/parameters/cpu"
-echo "0" > "/sys/module/printk/parameters/pid"
-echo "0" > "/sys/module/printk/parameters/printk_ratelimit"
-echo "0" > "/sys/module/printk/parameters/time"
-echo "1" > "/sys/module/printk/parameters/console_suspend"
-echo "1" > "/sys/module/printk/parameters/ignore_loglevel"
-echo "off" > "/proc/sys/kernel/printk_devkmsg"
+echo "0 0 0 0" > /proc/sys/kernel/printk
+echo "0" > /sys/kernel/printk_mode/printk_mode
+echo "0" > /sys/module/printk/parameters/cpu
+echo "0" > /sys/module/printk/parameters/pid
+echo "0" > /sys/module/printk/parameters/printk_ratelimit
+echo "0" > /sys/module/printk/parameters/time
+echo "1" > /sys/module/printk/parameters/console_suspend
+echo "1" > /sys/module/printk/parameters/ignore_loglevel
+echo "off" > /proc/sys/kernel/printk_devkmsg
 
 ####################################
 # I/O
@@ -294,18 +288,16 @@ done
 setprop debug.sf.hw 1
 setprop debug.sf.latch_unsignaled 1
 
-####################################
-#Parameter
-####################################
-chmod 755 /sys/module/qti_haptics/parameters/vmax_mv_override
-echo 500 > /sys/module/qti_haptics/parameters/vmax_mv_override
-echo 0 > /sys/module/rmnet_data/parameters/rmnet_data_log_level
-
 #Release cache on boot (try cleaning)
 echo "3" > /proc/sys/vm/drop_caches
 echo "1" > /proc/sys/vm/compact_memory
-echo 0 > /d/tracing/tracing_on
-echo 0 > /sys/kernel/debug/rpm_log
+
+####################################
+# Wi-Fi Logs (thx to @LeanHijosdesusMadres)
+####################################
+rm -rf /data/vendor/wlan_logs
+touch /data/vendor/wlan_logs
+chmod 000 /data/vendor/wlan_logs
 
 #CAF Tweak
 echo "0:1800000" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_freq
