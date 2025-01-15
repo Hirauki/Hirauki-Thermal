@@ -145,19 +145,12 @@ ext 5500000 /sys/class/power_supply/battery/constant_charge_current_max
      write $cpu/cpufreq/scaling_min_freq "$mid_freq"
      write $cpu/cpufreq/scaling_max_freq "$max_freq"
 # GPU Tweaks
-if [ -e /sys/class/kgsl/kgsl-3d0/devfreq/governor ]; then
-  echo "msm-adreno-tz" > /sys/class/kgsl/kgsl-3d0/devfreq/governor
-  echo "msm-adreno-tz" > /sys/class/kgsl/kgsl-3d0/devfreq/governor
-  echo 0 > /sys/class/kgsl/kgsl-3d0/throttling
-  echo 0 > /sys/class/kgsl/kgsl-3d0/bus_split
-  echo 1 > /sys/class/kgsl/kgsl-3d0/force_no_nap
-  echo 1 > /sys/class/kgsl/kgsl-3d0/force_rail_on
-  echo 1 > /sys/class/kgsl/kgsl-3d0/force_bus_on
-  echo 1 > /sys/class/kgsl/kgsl-3d0/force_clk_on
-fi
-
-find /sys/devices/system/cpu -maxdepth 1 -name 'cpu?' | while IFS= read -r cpu; do
-  echo performance > "$cpu/cpufreq/scaling_governor"
+echo 0 > /sys/class/kgsl/kgsl-3d0/throttling
+echo 0 > /sys/class/kgsl/kgsl-3d0/bus_split
+echo 1 > /sys/class/kgsl/kgsl-3d0/force_no_nap
+echo 1 > /sys/class/kgsl/kgsl-3d0/force_rail_on
+echo 1 > /sys/class/kgsl/kgsl-3d0/force_bus_on
+echo 1 > /sys/class/kgsl/kgsl-3d0/force_clk_on
 done
 
 #unity
