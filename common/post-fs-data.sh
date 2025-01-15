@@ -178,20 +178,6 @@ resetprop -n vidc.debug.level 0
 resetprop -n persist.sys.dalvik.hyperthreading true
 resetprop -n persist.sys.dalvik.multithread true
 ####################################
-# Optimizing Texture for Performance
-####################################
-resetprop -n ro.hwui.texture_cache_size 72
-resetprop -n ro.hwui.layer_cache_size 48
-resetprop -n ro.hwui.r_buffer_cache_size 8
-resetprop -n ro.hwui.path_cache_size 32
-resetprop -n ro.hwui.gradient_cache_size 1
-resetprop -n ro.hwui.drop_shadow_cache_size 6
-resetprop -n ro.hwui.texture_cache_flushrate 0.4
-resetprop -n ro.hwui.text_small_cache_width 1024
-resetprop -n ro.hwui.text_small_cache_height 1024
-resetprop -n ro.hwui.text_large_cache_width 2048
-resetprop -n ro.hwui.text_large_cache_height 2048
-####################################
 # LMK
 ####################################
 resetprop -n ro.lmk.debug false
