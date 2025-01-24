@@ -14,6 +14,10 @@ wait_until_login() {
   done
   rm -f "$test_file"
 }
+wait_until_login
+
+# Sleep some time to make sure init is completed
+sleep 10
 
 su -lp 2000 -c "cmd notification post -S bigtext -t 'W' 'Tag' 'Unfortunately, the performance has dropped significantly today.'"
 
@@ -40,6 +44,11 @@ cmd settings put system nearby_scanning_enabled 0
 cmd settings put system nearby_scanning_permission_allowed 0
 cmd settings put system rakuten_denwa 0
 cmd settings put system send_security_reports 0
+
+####################################
+# Services
+####################################
+su -c "stop logcat, logcatd, logd, tcpdump, cnss_diag, statsd, traced, idd-logreader, idd-logreadermain, stats dumpstate, aplogd, tcpdump, vendor.tcpdump, vendor_tcpdump, vendor.cnss_diag"
 
 ####################################
 # Kill sensor
@@ -74,12 +83,6 @@ lock_val "N" /sys/module/msm_thermal/parameters/enabled
 lock_val "0" /sys/module/msm_thermal/core_control/enabled
 lock_val "0" /sys/module/msm_thermal/vdd_restriction/enabled
 sleep 1
-# Thermal Stop Setprop Methode
-setprop init.svc.android.thermal-hal stopped
-setprop init.svc.vendor.semc.hardware.thermal-1-0 stopped
-setprop init.svc.vendor.semc.hardware.thermal-1-1 stopped
-setprop init.svc.vendor.thermal-hal-2-0.mtk stopped
-setprop init.svc.thermal_core stopped
 # Disable Via Props
   if resetprop dalvik.vm.dexopt.thermal-cutoff | grep -q '2'; then
     resetprop -n dalvik.vm.dexopt.thermal-cutoff 0
@@ -121,7 +124,6 @@ ext 5500000 /sys/class/qcom-battery/restricted_current
 ext 5000000 /sys/class/power_supply/pc_port/current_max
 ext 5500000 /sys/class/power_supply/battery/constant_charge_current_max
 
-
 # CPU Governor settings for LITTLE cores (cpu0-3) (thx to @Bias_khaliq)
   for cpu in /sys/devices/system/cpu/cpu[0-3]; do
     min_freq=$(cat $cpu/cpufreq/cpuinfo_min_freq)
@@ -144,18 +146,20 @@ ext 5500000 /sys/class/power_supply/battery/constant_charge_current_max
   
      write $cpu/cpufreq/scaling_min_freq "$mid_freq"
      write $cpu/cpufreq/scaling_max_freq "$max_freq"
+  done
+
 # GPU Tweaks
+echo "msm-adreno-tz" > /sys/class/kgsl/kgsl-3d0/devfreq/governor
 echo 0 > /sys/class/kgsl/kgsl-3d0/throttling
 echo 0 > /sys/class/kgsl/kgsl-3d0/bus_split
 echo 1 > /sys/class/kgsl/kgsl-3d0/force_no_nap
 echo 1 > /sys/class/kgsl/kgsl-3d0/force_rail_on
 echo 1 > /sys/class/kgsl/kgsl-3d0/force_bus_on
 echo 1 > /sys/class/kgsl/kgsl-3d0/force_clk_on
-done
 
 #unity
-echo "UnityMain, libunity.so" > /proc/sys/kernel/sched_lib_name
-echo 255 > /proc/sys/kernel/sched_lib_mask_force
+echo "com.miHoYo., com.activision., UnityMain, libunity.so, libil2cpp.so, libfb.so" > /proc/sys/kernel/sched_lib_name
+echo "240" > /proc/sys/kernel/sched_lib_mask_force
 
 #Deep Doze Enhancement (by @WeAreRavenS)
 rm -f /storage/emulated/0/*.log;
@@ -170,27 +174,6 @@ am kill logd
 killall -9 logd
 am kill logd.rc
 killall -9 logd.rc
-
-#Delete Logs
-rm -rf /data/media/0/MIUI/Gallery
-rm -rf /data/media/0/MIUI/.debug_log
-rm -rf /data/media/0/MIUI/BugReportCache
-rm -rf /data/media/0/mtklog
-rm -rf /data/anr/*
-rm -rf /dev/log/*
-rm -rf /data/tombstones/*
-rm -rf /data/log_other_mode/*
-rm -rf /data/system/dropbox/*
-rm -rf /data/system/usagestats/*
-rm -rf /data/log/*
-rm -rf /sys/kernel/debug/*
-
-####################################
-# Wi-Fi Logs (thx to @LeanHijosdesusMadres)
-####################################
-rm -rf /data/vendor/wlan_logs
-touch /data/vendor/wlan_logs
-chmod 000 /data/vendor/wlan_logs
 
 #fstrim
 fstrim -v /cache
@@ -251,13 +234,6 @@ done;
   write /proc/sys/kernel/printk "0 0 0 0"
   write /proc/sys/kernel/printk_devkmsg "off"
   write /sys/kernel/printk_mode/printk_mode "0"
-  write /sys/module/printk/parameters/cpu "0"
-  write /sys/module/printk/parameters/pid "0"
-  write /sys/module/printk/parameters/printk_ratelimit "0"
-  write /sys/module/printk/parameters/time "0"
-  write /sys/module/printk/parameters/console_suspend "0"
-  write /sys/module/printk/parameters/ignore_loglevel "1"
-
 
 # I/O
 for queue in /sys/block/*/queue; do
@@ -294,8 +270,7 @@ echo 0 > /d/tracing/tracing_on
 echo 0 > /sys/kernel/debug/rpm_log
 
 #CAF Tweak
-echo "0:1190000" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_freq
-echo "120" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_ms
-echo "0" > /sys/devices/system/cpu/cpu_boost/sched_boost_on_input
+echo "0:1800000" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_freq
+echo "230" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_ms
 
 su -lp 2000 -c "cmd notification post -S bigtext -t 'W' 'Tag' 'Wow, looks like those devices are heating up. Are you calling me out for this?'"
