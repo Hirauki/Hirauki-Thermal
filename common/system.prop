@@ -18,12 +18,14 @@ ro.vendor.at_library=libqti-at.so
 persist.vendor.qti.games.gt.prof=1
 
 # Performance
+debug.performance.tuning=1
 persist.sys.debug.gr.swapinterval=1
 persist.sys.egl.swapinterval=1
-ro.max.fling_velocity=20000
-ro.min.fling_velocity=18000
+ro.min.fling_velocity=8000
+ro.max.fling_velocity=12000
 vendor.perf.framepacing.enable=1
 vendor.performance.gbe=1
+video.accelerate.hw=1   
 
 # FPS Stabilizer
 debug.sf.showupdates=0 
