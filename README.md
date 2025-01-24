@@ -5,7 +5,7 @@ Umm, Hello everyone I am Hirauki.
 
 # ☕ About Me
 <img align="left" width="100" src="https://github.com/user-attachments/assets/36165b23-81f6-4241-aae8-a6327c6ce4fe">
-<p> I am Hirauki, a person wanna help imrpove performance with my module.
+<p> I am Hirauki, a person wanna help imrpove performance with my module. And also i maker design banner too.
   Not much i change in this module, but i really happy and glad if this module
   help to boost performance but with much heating cost.</p>
 
