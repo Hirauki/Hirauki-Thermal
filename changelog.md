@@ -3,7 +3,7 @@
 ## 7.2 (2025-01-06)
 - Update to 7.2 Wis'Adel
 - Fix slow charging and change value heat up to 50
-- Use source from new maintainer @vnnyyo
+- Use source from new maintainer @VinnyEOL
 - Drop some string for fix another GKI device
 - Change thermal with based from @Rem01Gaming
 - Adding scheduler for CPU
