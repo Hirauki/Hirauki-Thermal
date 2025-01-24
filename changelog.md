@@ -2,9 +2,11 @@
 
 ## 7.2 (2025-01-06)
 - Update to 7.2 Wis'Adel
-- Change temp at 50
-- Update with new surfaceflinger
+- Fix slow charging and change value heat up to 50
 - Use source from new maintainer @vnnyyo
+- Drop some string for fix another GKI device
+- Change thermal with based from @Rem01Gaming
+- Adding scheduler for CPU
 
 ## 7.1 (2024-12-29)
 - Update to 7.1 Lucia Crimson
