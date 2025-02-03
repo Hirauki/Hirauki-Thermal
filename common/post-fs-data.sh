@@ -28,6 +28,21 @@ if [[ ! -d /data/adb/modules/hirauki-thermal/system ]]; then
     fi
 }
 
+MODPATH=/data/adb/modules/hirauki-thermal
+
+mkdir -p "$MODPATH"/system/lib/egl
+mkdir -p "$MODPATH"/system/lib64/egl
+mkdir -p "$MODPATH"/system/vendor/lib/egl
+mkdir -p "$MODPATH"/system/vendor/lib64/egl
+
+model=$(cat /sys/class/kgsl/kgsl-3d0/gpu_model)
+config="0 1 $model"
+
+echo "$config" > "$MODPATH"/system/lib/egl/egl.cfg
+echo "$config" > "$MODPATH"/system/lib64/egl/egl.cfg
+echo "$config" > "$MODPATH"/system/vendor/lib/egl/egl.cfg
+echo "$config" > "$MODPATH"/system/vendor/lib64/egl/egl.cfg
+
     # disable I/O debugging
 echo 0 > /sys/block/dm-0/queue/iostats
 echo 0 > /sys/block/mmcblk0/queue/iostats
@@ -210,4 +225,15 @@ else
 sf=$(service list | grep -c "SurfaceFlinger")
 sleep 2
 fi
+done
+for prop in $set_properties; do
+    prop_name="${prop%%=*}"
+    prop_value="${prop#*=}"
+    setprop "$prop_name" "$prop_value"
+done
+
+for prop in $reset_properties; do
+    prop_name="${prop%%=*}"
+    prop_value="${prop#*=}"
+    resetprop -n "$prop_name" "$prop_value"
 done
