@@ -192,15 +192,6 @@ resetprop -n vidc.debug.level 0
 ####################################
 resetprop -n persist.sys.dalvik.hyperthreading true
 resetprop -n persist.sys.dalvik.multithread true
-####################################
-# LMK
-####################################
-resetprop -n ro.lmk.debug false
-resetprop -n ro.lmk.log_stats false
-resetprop -n ro.lmk.critical_upgrade true
-resetprop -n ro.lmk.upgrade_pressure 40
-resetprop -n ro.lmk.downgrade_pressure 60
-resetprop -n ro.lmk.kill_heaviest_task true
 
 ####################################
 # Tombstone (by @modulostk)
