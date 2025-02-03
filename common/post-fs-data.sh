@@ -226,14 +226,3 @@ sf=$(service list | grep -c "SurfaceFlinger")
 sleep 2
 fi
 done
-for prop in $set_properties; do
-    prop_name="${prop%%=*}"
-    prop_value="${prop#*=}"
-    setprop "$prop_name" "$prop_value"
-done
-
-for prop in $reset_properties; do
-    prop_name="${prop%%=*}"
-    prop_value="${prop#*=}"
-    resetprop -n "$prop_name" "$prop_value"
-done
