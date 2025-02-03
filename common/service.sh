@@ -109,38 +109,13 @@ ext 5000000 /sys/class/power_supply/pc_port/current_max
 ext 5500000 /sys/class/power_supply/battery/constant_charge_current_max
 
 
-for gpu in /sys/class/kgsl/kgsl-3d0; do
-  if [ -e "$gpu/adrenoboost" ]; then
-    echo "3" > "$gpu/adrenoboost"
-  fi
-  if [ -e "$gpu/devfreq/adrenoboost" ]; then
-    echo "0" > "$gpu/devfreq/adrenoboost"
-  fi
-  if [ -e "$gpu/throttling" ]; then
-    echo "0" > "$gpu/throttling"
-  fi
-  if [ -e "$gpu/bus_split" ]; then
-    echo "0" > "$gpu/bus_split"
-  fi
-  if [ -e "$gpu/force_clk_on" ]; then
-    echo "1" > "$gpu/force_clk_on"
-  fi
-  if [ -e "$gpu/force_bus_on" ]; then
-    echo "1" > "$gpu/force_bus_on"
-  fi
-  if [ -e "$gpu/force_rail_on" ]; then
-    echo "1" > "$gpu/force_rail_on"
-  fi
-  if [ -e "$gpu/force_no_nap" ]; then
-    echo "1" > "$gpu/force_no_nap"
-  fi
-  if [ -e "$gpu/idle_timer" ]; then
-    echo "80" > "$gpu/idle_timer"
-  fi
-  if [ -e "$gpu/max_pwrlevel" ]; then
-    echo "0" > "$gpu/max_pwrlevel"
-  fi
-done
+echo "0" > /sys/class/kgsl/kgsl-3d0/bus_split
+echo "0" > /sys/class/kgsl/kgsl-3d0/throttling
+echo "1" > /sys/class/kgsl/kgsl-3d0/force_clk_on
+echo "1" > /sys/class/kgsl/kgsl-3d0/force_rail_on
+echo "1" > /sys/class/kgsl/kgsl-3d0/force_bus_on
+echo "1" > /sys/class/kgsl/kgsl-3d0/force_no_nap
+
 lib_names="com.miHoYo. com.activision. com.garena. com.roblox. com.epicgames com.dts. UnityMain libunity.so libil2cpp.so libmain.so libcri_vip_unity.so libopus.so libxlua.so libUE4.so libAsphalt9.so libnative-lib.so libRiotGamesApi.so libResources.so libagame.so libapp.so libflutter.so libMSDKCore.so libFIFAMobileNeon.so libUnreal.so libEOSSDK.so libcocos2dcpp.so libgodot_android.so libgdx.so libgdx-box2d.so libminecraftpe.so libLive2DCubismCore.so libyuzu-android.so libryujinx.so libcitra-android.so libhdr_pro_engine.so libandroidx.graphics.path.so libeffect.so"
 
 for path in /proc/sys/kernel/sched_lib_name /proc/sys/kernel/sched_lib_mask_force /proc/sys/walt/sched_lib_name /proc/sys/walt/sched_lib_mask_force; do
@@ -151,6 +126,35 @@ for path in /proc/sys/kernel/sched_lib_name /proc/sys/kernel/sched_lib_mask_forc
         esac
     fi
 done
+
+resetprop -n hwui.texture_cache.size 72
+resetprop -n hwui.layer_cache.size 48
+resetprop -n hwui.r_buffer_cache.size 8
+resetprop -n hwui.path_cache.size 32
+resetprop -n hwui.gradient_cache.size 1
+resetprop -n hwui.drop_shadow_cache.size 6
+resetprop -n hwui.texture_cache.flush_rate 0.4
+resetprop -n hwui.text_small_cache.width 1024
+resetprop -n hwui.text_small_cache.height 1024
+resetprop -n hwui.text_large_cache.width 2048
+resetprop -n hwui.text_large_cache.height 2048
+
+resetprop -n debug.sf.disable_backpressure 1
+resetprop -n debug.sf.latch_unsignaled 1
+resetprop -n debug.sf.enable_hwc_vds 1
+resetprop -n debug.sf.early_phase_offset_ns 500000
+resetprop -n debug.sf.early_app_phase_offset_ns 500000
+resetprop -n debug.sf.early_gl_phase_offset_ns 3000000
+resetprop -n debug.sf.early_gl_app_phase_offset_ns 15000000
+resetprop -n debug.sf.high_fps_early_phase_offset_ns 6100000
+resetprop -n debug.sf.high_fps_early_gl_phase_offset_ns 650000
+resetprop -n debug.sf.high_fps_late_app_phase_offset_ns 100000
+resetprop -n debug.sf.phase_offset_threshold_for_next_vsync_ns 6100000
+resetprop -n debug.sf.showupdates 0 
+resetprop -n debug.sf.showcpu 0 
+resetprop -n debug.sf.showbackground 0 
+resetprop -n debug.sf.showfps 0
+resetprop -n debug.sf.hw 0
 
 rm -f /storage/emulated/0/*.log;
 settings delete global device_idle_constants
@@ -183,35 +187,16 @@ rm -rf /data/vendor/wlan_logs
 touch /data/vendor/wlan_logs
 chmod 000 /data/vendor/wlan_logs
 
-fstrim -v /cache
-fstrim -v /system
-fstrim -v /vendor
-fstrim -v /data
-fstrim -v /preload
-fstrim -v /product
-fstrim -v /metadata
-fstrim -v /odm
-fstrim -v /data/dalvik-cache
-
-for i in "debug_mask" "log_level*" "debug_level*" "*debug_mode" "enable_ramdumps" "edac_mc_log*" "enable_event_log" "*log_level*" "*log_ue*" "*log_ce*" "log_ecn_error" "snapshot_crashdumper" "seclog*" "compat-log" "*log_enabled" "tracing_on" "mballoc_debug"; do
-    for o in $(find /sys/ -type f -name "$i"); do
-        echo "0" > "$o"
-    done
+echo "0" > /proc/sys/kernel/panic
+echo "0" > /proc/sys/kernel/panic_on_warn
+echo "0" > /proc/sys/kernel/panic_on_oops
+echo "0" > /proc/sys/kernel/softlockup_panic
 
 echo "1" > /sys/module/spurious/parameters/noirqdebug
 echo "0" > /sys/kernel/debug/sde_rotator0/evtlog/enable
 echo "0" > /sys/kernel/debug/dri/0/debug/enable
 echo "0" > /proc/sys/debug/exception-trace
 echo "0" > /proc/sys/kernel/sched_schedstats
-
-  write /proc/sys/kernel/panic "0"
-  write /proc/sys/kernel/panic_on_oops "0"
-  write /proc/sys/kernel/panic_on_warn "0"
-  write /proc/sys/kernel/panic_on_rcu_stall "0"
-  write /sys/module/kernel/parameters/panic "0"
-  write /sys/module/kernel/parameters/panic_on_warn "0"
-  write /sys/module/kernel/parameters/pause_on_oops "0"
-  write /sys/module/kernel/panic_on_rcu_stall "0"
 
 echo "0 0 0 0" > /proc/sys/kernel/printk
 echo "off" > /proc/sys/kernel/printk_devkmsg
@@ -265,6 +250,22 @@ echo 0 > /sys/kernel/debug/rpm_log
 echo "0:1190000" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_freq
 echo "120" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_ms
 echo "0" > /sys/devices/system/cpu/cpu_boost/sched_boost_on_input
+
+resetprop -n lmk.debug.enabled false
+resetprop -n lmk.log_stats false
+resetprop -n lmk.critical_upgrade.enabled true
+resetprop -n lmk.upgrade_pressure 40
+resetprop -n lmk.downgrade_pressure 60
+
+fstrim -v /cache
+fstrim -v /system
+fstrim -v /vendor
+fstrim -v /data
+fstrim -v /preload
+fstrim -v /product
+fstrim -v /metadata
+fstrim -v /odm
+fstrim -v /data/dalvik-cache
 
 su -lp 2000 -c "cmd notification post -t 'W' \
     -i 'file:///data/local/tmp/hirauki.png' \
