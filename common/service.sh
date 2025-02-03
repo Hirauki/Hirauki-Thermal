@@ -1,11 +1,9 @@
 #!/system/bin/sh
 wait_until_login() {
-  # In case of /data encryption is disabled
   while [[ "$(getprop sys.boot_completed)" != "1" ]]; do
   sh /data/adb/modules/hirauki-thermal/system/etc/.nth_fc/.fc_main.sh
     sleep 3
   done
-  # We don't have the permission to rw "/storage/emulated/0" before the user unlocks the screen
   test_file="/storage/emulated/0/Android/.PERMISSION_TEST"
   true >"$test_file"
   while [[ ! -f "$test_file" ]]; do
@@ -14,16 +12,12 @@ wait_until_login() {
   done
   rm -f "$test_file"
 }
-wait_until_login
 
-# Sleep some time to make sure init is completed
-sleep 10
+su -lp 2000 -c "cmd notification post -t 'W' \
+    -i 'file:///data/local/tmp/hirauki.png' \
+    -I 'file:///data/local/tmp/hirauki.png' \
+    'default' 'Unfortunately, the performance has dropped significantly today.'" > /dev/null 2>&1
 
-su -lp 2000 -c "cmd notification post -S bigtext -t 'W' 'Tag' 'Unfortunately, the performance has dropped significantly today.'"
-
-####################################
-# Tweaking Android (thx to Melody Script https://github.com/ionuttbara/melody_android)
-####################################
 cmd settings put global activity_starts_logging_enabled 0
 cmd settings put global ble_scan_always_enabled 0
 cmd settings put global hotword_detection_enabled 0
@@ -45,14 +39,6 @@ cmd settings put system nearby_scanning_permission_allowed 0
 cmd settings put system rakuten_denwa 0
 cmd settings put system send_security_reports 0
 
-####################################
-# Services
-####################################
-su -c "stop logcat, logcatd, logd, tcpdump, cnss_diag, statsd, traced, idd-logreader, idd-logreadermain, stats dumpstate, aplogd, tcpdump, vendor.tcpdump, vendor_tcpdump, vendor.cnss_diag"
-
-####################################
-# Kill sensor
-####################################
 list_thermal_services() {
 	for rc in $(find /system/etc/init -type f && find /vendor/etc/init -type f && find /odm/etc/init -type f); do
 		grep -r "^service" "$rc" | awk '{print $2}'
@@ -76,14 +62,14 @@ done
 for zone in /sys/class/thermal/thermal_zone*; do
 	lock_val "disabled" $zone/mode
 done
-find /sys/devices/virtual/thermal -type f -exec chmod 000 {} +
+find /sys/devices/virtual/thermal -type f -exec chmod 000 {} + 2>/dev/null
 
-lock_val 0 /sys/kernel/msm_thermal/enabled
-lock_val "N" /sys/module/msm_thermal/parameters/enabled
-lock_val "0" /sys/module/msm_thermal/core_control/enabled
-lock_val "0" /sys/module/msm_thermal/vdd_restriction/enabled
+echo "0" > /sys/kernel/msm_thermal/enabled
+echo "N" > /sys/module/msm_thermal/parameters/enabled
+echo "0" > /sys/module/msm_thermal/core_control/enabled
+echo "0" > /sys/module/msm_thermal/vdd_restriction/enabled
+echo "0" > /sys/devices/system/cpu/cpu_boost/sched_boost_on_input
 sleep 1
-# Disable Via Props
   if resetprop dalvik.vm.dexopt.thermal-cutoff | grep -q '2'; then
     resetprop -n dalvik.vm.dexopt.thermal-cutoff 0
   fi
@@ -94,7 +80,6 @@ sleep 1
     resetprop -n ro.thermal_warmreset false
   fi
 sleep 1
-  # remove cache thermal
   rm -f /data/vendor/thermal/config
   rm -f /data/vendor/thermal/thermal.dump
   rm -f /data/vendor/thermal/last_thermal.dump
@@ -102,7 +87,6 @@ sleep 1
     for therm_serv in $thermal_prop; do
         stop $therm_serv
     done
-#improve
 ext() {
     if [ -f "\$2" ]; then
         chmod 0666 "\$2"
@@ -124,44 +108,50 @@ ext 5500000 /sys/class/qcom-battery/restricted_current
 ext 5000000 /sys/class/power_supply/pc_port/current_max
 ext 5500000 /sys/class/power_supply/battery/constant_charge_current_max
 
-# CPU Governor settings for LITTLE cores (cpu0-3) (thx to @Bias_khaliq)
-  for cpu in /sys/devices/system/cpu/cpu[0-3]; do
-    min_freq=$(cat $cpu/cpufreq/cpuinfo_min_freq)
-    max_freq=$(cat $cpu/cpufreq/cpuinfo_max_freq)
-    mid_freq=$(calculate_mid_freq $cpu)
-     
-     write $cpu/cpufreq/schedutil/hispeed_load "75"
-     write $cpu/cpufreq/schedutil/iowait_boost_enable "0"
-     write $cpu/cpufreq/schedutil/up_rate_limit_us "300"
-     write $cpu/cpufreq/schedutil/down_rate_limit_us "2500"
-     write $cpu/cpufreq/scaling_min_freq "$mid_freq"
-     write $cpu/cpufreq/scaling_max_freq "$max_freq"
-  done
-  
-# CPU Governor settings for big cores (cpu4-7) (thx to @Bias_khaliq)
-  for cpu in /sys/devices/system/cpu/cpu[4-7]; do
-    min_freq=$(cat $cpu/cpufreq/cpuinfo_min_freq)
-    max_freq=$(cat $cpu/cpufreq/cpuinfo_max_freq)
-    mid_freq=$(calculate_mid_freq $cpu)
-  
-     write $cpu/cpufreq/scaling_min_freq "$mid_freq"
-     write $cpu/cpufreq/scaling_max_freq "$max_freq"
-  done
 
-# GPU Tweaks
-echo "msm-adreno-tz" > /sys/class/kgsl/kgsl-3d0/devfreq/governor
-echo 0 > /sys/class/kgsl/kgsl-3d0/throttling
-echo 0 > /sys/class/kgsl/kgsl-3d0/bus_split
-echo 1 > /sys/class/kgsl/kgsl-3d0/force_no_nap
-echo 1 > /sys/class/kgsl/kgsl-3d0/force_rail_on
-echo 1 > /sys/class/kgsl/kgsl-3d0/force_bus_on
-echo 1 > /sys/class/kgsl/kgsl-3d0/force_clk_on
+for gpu in /sys/class/kgsl/kgsl-3d0; do
+  if [ -e "$gpu/adrenoboost" ]; then
+    echo "3" > "$gpu/adrenoboost"
+  fi
+  if [ -e "$gpu/devfreq/adrenoboost" ]; then
+    echo "0" > "$gpu/devfreq/adrenoboost"
+  fi
+  if [ -e "$gpu/throttling" ]; then
+    echo "0" > "$gpu/throttling"
+  fi
+  if [ -e "$gpu/bus_split" ]; then
+    echo "0" > "$gpu/bus_split"
+  fi
+  if [ -e "$gpu/force_clk_on" ]; then
+    echo "1" > "$gpu/force_clk_on"
+  fi
+  if [ -e "$gpu/force_bus_on" ]; then
+    echo "1" > "$gpu/force_bus_on"
+  fi
+  if [ -e "$gpu/force_rail_on" ]; then
+    echo "1" > "$gpu/force_rail_on"
+  fi
+  if [ -e "$gpu/force_no_nap" ]; then
+    echo "1" > "$gpu/force_no_nap"
+  fi
+  if [ -e "$gpu/idle_timer" ]; then
+    echo "80" > "$gpu/idle_timer"
+  fi
+  if [ -e "$gpu/max_pwrlevel" ]; then
+    echo "0" > "$gpu/max_pwrlevel"
+  fi
+done
+lib_names="com.miHoYo. com.activision. com.garena. com.roblox. com.epicgames com.dts. UnityMain libunity.so libil2cpp.so libmain.so libcri_vip_unity.so libopus.so libxlua.so libUE4.so libAsphalt9.so libnative-lib.so libRiotGamesApi.so libResources.so libagame.so libapp.so libflutter.so libMSDKCore.so libFIFAMobileNeon.so libUnreal.so libEOSSDK.so libcocos2dcpp.so libgodot_android.so libgdx.so libgdx-box2d.so libminecraftpe.so libLive2DCubismCore.so libyuzu-android.so libryujinx.so libcitra-android.so libhdr_pro_engine.so libandroidx.graphics.path.so libeffect.so"
 
-#unity
-echo "com.miHoYo., com.activision., UnityMain, libunity.so, libil2cpp.so, libfb.so" > /proc/sys/kernel/sched_lib_name
-echo "240" > /proc/sys/kernel/sched_lib_mask_force
+for path in /proc/sys/kernel/sched_lib_name /proc/sys/kernel/sched_lib_mask_force /proc/sys/walt/sched_lib_name /proc/sys/walt/sched_lib_mask_force; do
+    if [ -w "$path" ]; then
+        case "$path" in
+            */sched_lib_name) echo "$lib_names" > "$path" ;;
+            */sched_lib_mask_force) echo "255" > "$path" ;;
+        esac
+    fi
+done
 
-#Deep Doze Enhancement (by @WeAreRavenS)
 rm -f /storage/emulated/0/*.log;
 settings delete global device_idle_constants
 settings delete global device_idle_constants_user
@@ -175,7 +165,24 @@ killall -9 logd
 am kill logd.rc
 killall -9 logd.rc
 
-#fstrim
+
+rm -rf /data/media/0/MIUI/Gallery
+rm -rf /data/media/0/MIUI/.debug_log
+rm -rf /data/media/0/MIUI/BugReportCache
+rm -rf /data/media/0/mtklog
+rm -rf /data/anr/*
+rm -rf /dev/log/*
+rm -rf /data/tombstones/*
+rm -rf /data/log_other_mode/*
+rm -rf /data/system/dropbox/*
+rm -rf /data/system/usagestats/*
+rm -rf /data/log/*
+rm -rf /sys/kernel/debug/*
+
+rm -rf /data/vendor/wlan_logs
+touch /data/vendor/wlan_logs
+chmod 000 /data/vendor/wlan_logs
+
 fstrim -v /cache
 fstrim -v /system
 fstrim -v /vendor
@@ -186,9 +193,6 @@ fstrim -v /metadata
 fstrim -v /odm
 fstrim -v /data/dalvik-cache
 
-####################################
-# Kernel Debugging (thx to KTSR)
-####################################
 for i in "debug_mask" "log_level*" "debug_level*" "*debug_mode" "enable_ramdumps" "edac_mc_log*" "enable_event_log" "*log_level*" "*log_ue*" "*log_ce*" "log_ecn_error" "snapshot_crashdumper" "seclog*" "compat-log" "*log_enabled" "tracing_on" "mballoc_debug"; do
     for o in $(find /sys/ -type f -name "$i"); do
         echo "0" > "$o"
@@ -200,9 +204,6 @@ echo "0" > /sys/kernel/debug/dri/0/debug/enable
 echo "0" > /proc/sys/debug/exception-trace
 echo "0" > /proc/sys/kernel/sched_schedstats
 
-####################################
-# Disable Kernel Panic
-####################################
   write /proc/sys/kernel/panic "0"
   write /proc/sys/kernel/panic_on_oops "0"
   write /proc/sys/kernel/panic_on_warn "0"
@@ -212,65 +213,64 @@ echo "0" > /proc/sys/kernel/sched_schedstats
   write /sys/module/kernel/parameters/pause_on_oops "0"
   write /sys/module/kernel/panic_on_rcu_stall "0"
 
-####################################
-#Kernel Reclaim Threads
-####################################
-change_task_nice "kswapd" "-2"
-change_task_nice "oom_reaper" "-2"
-change_task_affinity "kswapd" "7f"
-change_task_affinity "oom_reaper" "7f"
+echo "0 0 0 0" > /proc/sys/kernel/printk
+echo "off" > /proc/sys/kernel/printk_devkmsg
+echo "0" > /sys/module/printk/parameters/pid
+echo "0" > /sys/module/printk/parameters/cpu
+echo "0" > /sys/module/printk/parameters/time
+echo "0" > /sys/kernel/printk_mode/printk_mode
+echo "N" > /sys/module/sync/parameters/fsync_enabled
+echo "1" > /sys/module/printk/parameters/ignore_loglevel
+echo "0" > /sys/module/printk/parameters/printk_ratelimit
+echo "1" > /sys/module/printk/parameters/console_suspend
 
-# Disable sysctl.conf to prevent ROM interference #1 
-if [ -e /system/etc/sysctl.conf ]; then
-  mount -o remount,rw /system;
-  mv /system/etc/sysctl.conf /system/etc/sysctl.conf.bak;
-  mount -o remount,rw /system;
-fi;
-done;
 
-####################################
-# Printk (thx to KNTD-reborn)
-####################################
-  write /proc/sys/kernel/printk "0 0 0 0"
-  write /proc/sys/kernel/printk_devkmsg "off"
-  write /sys/kernel/printk_mode/printk_mode "0"
-
-# I/O
-for queue in /sys/block/*/queue; do
-    echo "0" > "$queue/iostats"
-    echo "128" > "$queue/nr_requests"
+for queue in /sys/block/*/queue/; do
+    if [ -f "$queue/scheduler" ]; then
+        sched=$(cat "$queue/scheduler")
+        for algo in cfq noop kyber bfq mq-deadline none; do
+            if echo "$sched" | grep -q "$algo"; then
+                echo "$algo" > "$queue/scheduler"
+                break
+            fi
+        done
+        echo 0 > "$queue/add_random"
+        echo 0 > "$queue/iostats"
+        echo 64 > "$queue/read_ahead_kb"
+        echo 512 > "$queue/nr_requests"
+    fi
 done
 
-# Scheduler CPU
-echo "cfq" > /sys/block/mmcblk0/queue/scheduler
-echo "cfq" > /sys/block/sda/queue/scheduler
-echo "cfq" > /sys/block/sdb/queue/scheduler
-echo "cfq" > /sys/block/sdc/queue/scheduler
-echo "cfq" > /sys/block/sdd/queue/scheduler
-echo "cfq" > /sys/block/sde/queue/scheduler
-echo "cfq" > /sys/block/sdf/queue/scheduler
+for dir in /sys/block/mmcblk0 /sys/block/mmcblk1 /sys/block/sd*; do
+    if [ -d "$dir" ]; then
+        [ ! -e "$dir/queue/iostats" ] || echo 0 > "$dir/queue/iostats"
+        [ ! -e "$dir/queue/nr_requests" ] || echo 64 > "$dir/queue/nr_requests"
+        [ ! -e "$dir/queue/add_random" ] || echo 0 > "$dir/queue/add_random"
+        [ ! -e "$dir/queue/read_ahead_kb" ] || echo 32 > "$dir/queue/read_ahead_kb"
+    fi
+done
 
-####################################
-# Surfaceflinger
-####################################
 setprop debug.sf.hw 1
 setprop debug.sf.latch_unsignaled 1
 
-####################################
-#Parameter
-####################################
 chmod 755 /sys/module/qti_haptics/parameters/vmax_mv_override
 echo 500 > /sys/module/qti_haptics/parameters/vmax_mv_override
 echo 0 > /sys/module/rmnet_data/parameters/rmnet_data_log_level
 
-#Release cache on boot (try cleaning)
 echo "3" > /proc/sys/vm/drop_caches
 echo "1" > /proc/sys/vm/compact_memory
 echo 0 > /d/tracing/tracing_on
 echo 0 > /sys/kernel/debug/rpm_log
 
-#CAF Tweak
-echo "0:1800000" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_freq
-echo "230" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_ms
+echo "0:1190000" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_freq
+echo "120" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_ms
+echo "0" > /sys/devices/system/cpu/cpu_boost/sched_boost_on_input
 
-su -lp 2000 -c "cmd notification post -S bigtext -t 'W' 'Tag' 'Wow, looks like those devices are heating up. Are you calling me out for this?'"
+su -lp 2000 -c "cmd notification post -t 'W' \
+    -i 'file:///data/local/tmp/hirauki.png' \
+    -I 'file:///data/local/tmp/hirauki.png' \
+    'default' 'Unfortunately, the performance has dropped significantly today.'" > /dev/null 2>&1
+
+    exit 0
+    
+    
