@@ -1,15 +1,6 @@
 # Hirauki-Thermal
-Umm, Hello everyone I am Hirauki.
-<img align="center" width="800" src="https://github.com/user-attachments/assets/6d80d35c-611e-46cb-a0c9-42c8f0b0a406">
-
-
-# ☕ About Me
-<a>I am Hirauki, a person wanna help imrpove performance with my module.</a>
-<img align="left" width="100" src="https://github.com/user-attachments/assets/36165b23-81f6-4241-aae8-a6327c6ce4fe">
-  <p>And also i maker design banner too.
-  Not much i change in this module, but i really happy and glad if this module
-  help to boost performance but with much heating cost.
-<p/>
+Umm, Hello everyone Welcome to Hirauki Thermal Project
+<img align="center" width="800" src="https://github.com/user-attachments/assets/c014b2af-92d5-4ab3-b206-c85881cefcfa">
   
 
 # 🤖 Known first
@@ -21,9 +12,9 @@ Please read before use this module:
 <a/>
 
 ## **📫 Contacts**
-<a>**Please Contact me on Telegram for a quick response** [Hirauki](https://t.me/hirauki)
+<a>**Please Contact me on Telegram for a any report about this project** [Hirauki Disscussion](https://t.me/higanediscussion)
 <img align="left" width="100" src="https://github.com/user-attachments/assets/d34d2262-b22f-4ffd-8a3f-42ffcc2c1dcf">
-If you didn't get response by me, so don't worry. I'll try to reply your response.
+If you didn't get response by me, Tag me once per time, and i'll response it.
 </a>
 
 # 💳 Open Donate
@@ -32,10 +23,4 @@ But for global like paypal, ko-fi, i can't make it because i don't have card.
 <img align="left" width="100" src="https://github.com/user-attachments/assets/7b903660-2e5c-42e7-b3f5-5f98faaca650">
 
 [Trakteer](https://trakteer.id/higane/tip)
-<a/>
-
-
-# Another Things
-<a>Here, pat your Ibuki
-<img align="center" width="800" src="https://github.com/user-attachments/assets/fc5d7093-2f4a-487b-ad02-c27edfface62">
 <a/>
