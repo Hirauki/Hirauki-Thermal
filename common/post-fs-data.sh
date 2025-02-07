@@ -191,9 +191,12 @@ resetprop -n vidc.debug.level 0
 resetprop -n tombstoned.max_tombstone_count 0
 # Max anr tombstone count [/data/anr]
 resetprop -n tombstoned.max_anr_count 0
-#dropbox disabler
-settings put global dropbox:dumpsys:procstats disabled
-settings put global dropbox:dumpsys:usagestats disabled
+#LMK
+resetprop -n lmk.debug.enabled false
+resetprop -n lmk.log_stats false
+resetprop -n lmk.critical_upgrade.enabled true
+resetprop -n lmk.upgrade_pressure 40
+resetprop -n lmk.downgrade_pressure 60
 while :
 do
 sf=0
