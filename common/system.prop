@@ -58,7 +58,6 @@ ro.ui.pipeline=skiaglthreaded
 #Skia tracing disabler
 debug.hwui.render_dirty_regions=false
 debug.hwui.skia_atrace_enabled=false
-debug.renderthread.skia.reduceopstasksplitting=true
 renderthread.skia.reduceopstasksplitting=true
 renderthread.skiagl.reduceopstasksplitting=true
 
