@@ -1,8 +1,6 @@
 #!/system/bin/sh
 MODDIR ${0%/*}
-# Set zram configurations
 setprop ro.vendor.qti.config.zram true
-# This script will be executed in post-fs-data mode
 if
 write() {
   if [ -f "$1" ]; then
@@ -43,7 +41,6 @@ echo "$config" > "$MODPATH"/system/lib64/egl/egl.cfg
 echo "$config" > "$MODPATH"/system/vendor/lib/egl/egl.cfg
 echo "$config" > "$MODPATH"/system/vendor/lib64/egl/egl.cfg
 
-    # disable I/O debugging
 echo 0 > /sys/block/dm-0/queue/iostats
 echo 0 > /sys/block/mmcblk0/queue/iostats
 echo 0 > /sys/block/mmcblk0rpmb/queue/iostats
@@ -187,12 +184,6 @@ resetprop -n sys.miui.ndcd 0
 resetprop -n sys.wifitracing.started 0
 resetprop -n vendor.vidc.debug.level 0
 resetprop -n vidc.debug.level 0
-####################################
-# DalvikHyperthreading (by @modulostk)
-####################################
-resetprop -n persist.sys.dalvik.hyperthreading true
-resetprop -n persist.sys.dalvik.multithread true
-
 ####################################
 # Tombstone (by @modulostk)
 ####################################
