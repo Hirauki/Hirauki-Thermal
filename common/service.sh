@@ -39,6 +39,8 @@ cmd settings put system nearby_scanning_permission_allowed 0
 cmd settings put system rakuten_denwa 0
 cmd settings put system send_security_reports 0
 
+su -c "stop logcat, logcatd, logd, tcpdump, cnss_diag, statsd, traced, idd-logreader, idd-logreadermain, stats dumpstate, aplogd, tcpdump, vendor.tcpdump, vendor_tcpdump, vendor.cnss_diag"
+
 list_thermal_services() {
 	for rc in $(find /system/etc/init -type f && find /vendor/etc/init -type f && find /odm/etc/init -type f); do
 		grep -r "^service" "$rc" | awk '{print $2}'
@@ -139,23 +141,6 @@ resetprop -n hwui.text_small_cache.height 1024
 resetprop -n hwui.text_large_cache.width 2048
 resetprop -n hwui.text_large_cache.height 2048
 
-resetprop -n debug.sf.disable_backpressure 1
-resetprop -n debug.sf.latch_unsignaled 1
-resetprop -n debug.sf.enable_hwc_vds 1
-resetprop -n debug.sf.early_phase_offset_ns 500000
-resetprop -n debug.sf.early_app_phase_offset_ns 500000
-resetprop -n debug.sf.early_gl_phase_offset_ns 3000000
-resetprop -n debug.sf.early_gl_app_phase_offset_ns 15000000
-resetprop -n debug.sf.high_fps_early_phase_offset_ns 6100000
-resetprop -n debug.sf.high_fps_early_gl_phase_offset_ns 650000
-resetprop -n debug.sf.high_fps_late_app_phase_offset_ns 100000
-resetprop -n debug.sf.phase_offset_threshold_for_next_vsync_ns 6100000
-resetprop -n debug.sf.showupdates 0 
-resetprop -n debug.sf.showcpu 0 
-resetprop -n debug.sf.showbackground 0 
-resetprop -n debug.sf.showfps 0
-resetprop -n debug.sf.hw 0
-
 rm -f /storage/emulated/0/*.log;
 settings delete global device_idle_constants
 settings delete global device_idle_constants_user
@@ -168,7 +153,6 @@ am kill logd
 killall -9 logd
 am kill logd.rc
 killall -9 logd.rc
-
 
 rm -rf /data/media/0/MIUI/Gallery
 rm -rf /data/media/0/MIUI/.debug_log
@@ -246,10 +230,6 @@ echo "3" > /proc/sys/vm/drop_caches
 echo "1" > /proc/sys/vm/compact_memory
 echo 0 > /d/tracing/tracing_on
 echo 0 > /sys/kernel/debug/rpm_log
-
-echo "0:1190000" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_freq
-echo "120" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_ms
-echo "0" > /sys/devices/system/cpu/cpu_boost/sched_boost_on_input
 
 resetprop -n lmk.debug.enabled false
 resetprop -n lmk.log_stats false
