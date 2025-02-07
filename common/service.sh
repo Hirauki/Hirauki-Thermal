@@ -149,28 +149,6 @@ dumpsys deviceidle enable deep
 settings put global device_idle_constants
 sleep 5
 
-am kill logd
-killall -9 logd
-am kill logd.rc
-killall -9 logd.rc
-
-rm -rf /data/media/0/MIUI/Gallery
-rm -rf /data/media/0/MIUI/.debug_log
-rm -rf /data/media/0/MIUI/BugReportCache
-rm -rf /data/media/0/mtklog
-rm -rf /data/anr/*
-rm -rf /dev/log/*
-rm -rf /data/tombstones/*
-rm -rf /data/log_other_mode/*
-rm -rf /data/system/dropbox/*
-rm -rf /data/system/usagestats/*
-rm -rf /data/log/*
-rm -rf /sys/kernel/debug/*
-
-rm -rf /data/vendor/wlan_logs
-touch /data/vendor/wlan_logs
-chmod 000 /data/vendor/wlan_logs
-
 echo "0" > /proc/sys/kernel/panic
 echo "0" > /proc/sys/kernel/panic_on_warn
 echo "0" > /proc/sys/kernel/panic_on_oops
@@ -230,12 +208,6 @@ echo "3" > /proc/sys/vm/drop_caches
 echo "1" > /proc/sys/vm/compact_memory
 echo 0 > /d/tracing/tracing_on
 echo 0 > /sys/kernel/debug/rpm_log
-
-resetprop -n lmk.debug.enabled false
-resetprop -n lmk.log_stats false
-resetprop -n lmk.critical_upgrade.enabled true
-resetprop -n lmk.upgrade_pressure 40
-resetprop -n lmk.downgrade_pressure 60
 
 fstrim -v /cache
 fstrim -v /system
