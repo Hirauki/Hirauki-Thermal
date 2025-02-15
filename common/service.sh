@@ -1,3 +1,4 @@
+
 #!/system/bin/sh
 wait_until_login() {
   while [[ "$(getprop sys.boot_completed)" != "1" ]]; do
@@ -13,10 +14,7 @@ wait_until_login() {
   rm -f "$test_file"
 }
 
-su -lp 2000 -c "cmd notification post -t 'W' \
-    -i 'file:///data/local/tmp/hirauki.png' \
-    -I 'file:///data/local/tmp/hirauki.png' \
-    'default' 'Unfortunately, the performance has dropped significantly today.'" > /dev/null 2>&1
+su -lp 2000 -c "cmd notification post -S bigtext -t 'W' 'Tag' 'Unfortunately, the performance has dropped significantly today.'"
 
 cmd settings put global activity_starts_logging_enabled 0
 cmd settings put global ble_scan_always_enabled 0
@@ -38,8 +36,6 @@ cmd settings put system nearby_scanning_enabled 0
 cmd settings put system nearby_scanning_permission_allowed 0
 cmd settings put system rakuten_denwa 0
 cmd settings put system send_security_reports 0
-
-su -c "stop logcat, logcatd, logd, tcpdump, cnss_diag, statsd, traced, idd-logreader, idd-logreadermain, stats dumpstate, aplogd, tcpdump, vendor.tcpdump, vendor_tcpdump, vendor.cnss_diag"
 
 list_thermal_services() {
 	for rc in $(find /system/etc/init -type f && find /vendor/etc/init -type f && find /odm/etc/init -type f); do
@@ -129,18 +125,6 @@ for path in /proc/sys/kernel/sched_lib_name /proc/sys/kernel/sched_lib_mask_forc
     fi
 done
 
-resetprop -n hwui.texture_cache.size 72
-resetprop -n hwui.layer_cache.size 48
-resetprop -n hwui.r_buffer_cache.size 8
-resetprop -n hwui.path_cache.size 32
-resetprop -n hwui.gradient_cache.size 1
-resetprop -n hwui.drop_shadow_cache.size 6
-resetprop -n hwui.texture_cache.flush_rate 0.4
-resetprop -n hwui.text_small_cache.width 1024
-resetprop -n hwui.text_small_cache.height 1024
-resetprop -n hwui.text_large_cache.width 2048
-resetprop -n hwui.text_large_cache.height 2048
-
 rm -f /storage/emulated/0/*.log;
 settings delete global device_idle_constants
 settings delete global device_idle_constants_user
@@ -149,27 +133,47 @@ dumpsys deviceidle enable deep
 settings put global device_idle_constants
 sleep 5
 
-echo "0" > /proc/sys/kernel/panic
-echo "0" > /proc/sys/kernel/panic_on_warn
-echo "0" > /proc/sys/kernel/panic_on_oops
-echo "0" > /proc/sys/kernel/softlockup_panic
+rm -rf /data/media/0/MIUI/Gallery
+rm -rf /data/media/0/MIUI/.debug_log
+rm -rf /data/media/0/MIUI/BugReportCache
+rm -rf /data/media/0/mtklog
+rm -rf /data/anr/*
+rm -rf /dev/log/*
+rm -rf /data/tombstones/*
+rm -rf /data/log_other_mode/*
+rm -rf /data/system/dropbox/*
+rm -rf /data/system/usagestats/*
+rm -rf /data/log/*
+rm -rf /sys/kernel/debug/*
 
-echo "1" > /sys/module/spurious/parameters/noirqdebug
-echo "0" > /sys/kernel/debug/sde_rotator0/evtlog/enable
-echo "0" > /sys/kernel/debug/dri/0/debug/enable
-echo "0" > /proc/sys/debug/exception-trace
-echo "0" > /proc/sys/kernel/sched_schedstats
+rm -rf /data/vendor/wlan_logs
+touch /data/vendor/wlan_logs
+chmod 000 /data/vendor/wlan_logs
 
-echo "0 0 0 0" > /proc/sys/kernel/printk
-echo "off" > /proc/sys/kernel/printk_devkmsg
-echo "0" > /sys/module/printk/parameters/pid
-echo "0" > /sys/module/printk/parameters/cpu
-echo "0" > /sys/module/printk/parameters/time
-echo "0" > /sys/kernel/printk_mode/printk_mode
-echo "N" > /sys/module/sync/parameters/fsync_enabled
-echo "1" > /sys/module/printk/parameters/ignore_loglevel
-echo "0" > /sys/module/printk/parameters/printk_ratelimit
-echo "1" > /sys/module/printk/parameters/console_suspend
+echo "0 0 0 0" > "/proc/sys/kernel/printk"
+echo "0" > "/sys/kernel/printk_mode/printk_mode"
+echo "0" > "/sys/module/printk/parameters/cpu"
+echo "0" > "/sys/module/printk/parameters/pid"
+echo "0" > "/sys/module/printk/parameters/printk_ratelimit"
+echo "0" > "/sys/module/printk/parameters/time"
+echo "1" > "/sys/module/printk/parameters/console_suspend"
+echo "1" > "/sys/module/printk/parameters/ignore_loglevel"
+echo "off" > "/proc/sys/kernel/printk_devkmsg"
+
+echo "0" > /sys/kernel/rcu_expedited 0
+echo "0" > /sys/kernel/rcu_normal 0
+echo "0" > /sys/devices/system/cpu/isolated 0
+echo "0" > /proc/sys/kernel/sched_tunable_scaling 0
+echo "1" > /proc/sys/kernel/timer_migration 1
+echo "0" > /proc/sys/kernel/hung_task_timeout_secs 0
+echo "25" > /proc/sys/kernel/perf_cpu_time_max_percent 25
+echo "1" > /proc/sys/kernel/sched_autogroup_enabled 1
+echo "0" > /proc/sys/kernel/sched_child_runs_first 0
+echo "10000000" > /proc/sys/kernel/sched_latency_ns 
+echo "2000000" > /proc/sys/kernel/sched_wakeup_granularity_ns 
+echo "3200000" > /proc/sys/kernel/sched_min_granularity_ns 
+echo "2000000" > /proc/sys/kernel/sched_migration_cost_ns 
+echo "32" > /proc/sys/kernel/sched_nr_migrate
 
 
 for queue in /sys/block/*/queue/; do
@@ -209,6 +213,10 @@ echo "1" > /proc/sys/vm/compact_memory
 echo 0 > /d/tracing/tracing_on
 echo 0 > /sys/kernel/debug/rpm_log
 
+echo "0:1190000" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_freq
+echo "120" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_ms
+echo "0" > /sys/devices/system/cpu/cpu_boost/sched_boost_on_input
+
 fstrim -v /cache
 fstrim -v /system
 fstrim -v /vendor
@@ -219,11 +227,7 @@ fstrim -v /metadata
 fstrim -v /odm
 fstrim -v /data/dalvik-cache
 
-su -lp 2000 -c "cmd notification post -t 'W' \
-    -i 'file:///data/local/tmp/hirauki.png' \
-    -I 'file:///data/local/tmp/hirauki.png' \
-    'default' 'Unfortunately, the performance has dropped significantly today.'" > /dev/null 2>&1
-
+su -lp 2000 -c "cmd notification post -S bigtext -t 'W' 'Tag' 'Wow, looks like those devices are heating up. Are you calling me out for this?'"
     exit 0
     
     
