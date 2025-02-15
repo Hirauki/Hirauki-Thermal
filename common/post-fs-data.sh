@@ -1,6 +1,9 @@
+
 #!/system/bin/sh
 MODDIR ${0%/*}
+# Set zram configurations
 setprop ro.vendor.qti.config.zram true
+# This script will be executed in post-fs-data mode
 if
 write() {
   if [ -f "$1" ]; then
@@ -41,6 +44,7 @@ echo "$config" > "$MODPATH"/system/lib64/egl/egl.cfg
 echo "$config" > "$MODPATH"/system/vendor/lib/egl/egl.cfg
 echo "$config" > "$MODPATH"/system/vendor/lib64/egl/egl.cfg
 
+    # disable I/O debugging
 echo 0 > /sys/block/dm-0/queue/iostats
 echo 0 > /sys/block/mmcblk0/queue/iostats
 echo 0 > /sys/block/mmcblk0rpmb/queue/iostats
@@ -185,18 +189,29 @@ resetprop -n sys.wifitracing.started 0
 resetprop -n vendor.vidc.debug.level 0
 resetprop -n vidc.debug.level 0
 ####################################
+# DalvikHyperthreading (by @modulostk)
+####################################
+resetprop -n persist.sys.dalvik.hyperthreading true
+resetprop -n persist.sys.dalvik.multithread true
+####################################
+#LMKD by @WisnuArdhi34
+####################################
+resetprop -n lmk.debug.enabled false
+resetprop -n lmk.log_stats false
+resetprop -n lmk.critical_upgrade.enabled true
+resetprop -n lmk.upgrade_pressure 40
+resetprop -n lmk.downgrade_pressure 60
+
+####################################
 # Tombstone (by @modulostk)
 ####################################
 # Max tombstone count [/data/tombstones]
 resetprop -n tombstoned.max_tombstone_count 0
 # Max anr tombstone count [/data/anr]
 resetprop -n tombstoned.max_anr_count 0
-#LMK
-resetprop -n lmk.debug.enabled false
-resetprop -n lmk.log_stats false
-resetprop -n lmk.critical_upgrade.enabled true
-resetprop -n lmk.upgrade_pressure 40
-resetprop -n lmk.downgrade_pressure 60
+#dropbox disabler
+settings put global dropbox:dumpsys:procstats disabled
+settings put global dropbox:dumpsys:usagestats disabled
 while :
 do
 sf=0
