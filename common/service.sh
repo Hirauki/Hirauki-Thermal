@@ -14,7 +14,7 @@ wait_until_login() {
   rm -f "$test_file"
 }
 
-su -lp 2000 -c "cmd notification post -S bigtext -t 'W' 'Tag' 'Unfortunately, the performance has dropped significantly today.'"
+su -lp 2000 -c "cmd notification post -S bigtext -t 'W' 'Tag' 'Now now, wait in service. I got special things for this device.'"
 
 cmd settings put global activity_starts_logging_enabled 0
 cmd settings put global ble_scan_always_enabled 0
@@ -228,6 +228,7 @@ fstrim -v /odm
 fstrim -v /data/dalvik-cache
 
 su -lp 2000 -c "cmd notification post -S bigtext -t 'W' 'Tag' 'Wow, looks like those devices are heating up. Are you calling me out for this?'"
+
     exit 0
     
     
