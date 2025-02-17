@@ -5,6 +5,7 @@
 ##########################################################################################
 
 abort() {
+  ui_print "$1"
   rm -rf $MODPATH 2>/dev/null
   cleanup
   rm -rf $TMPDIR 2>/dev/null
@@ -13,6 +14,11 @@ abort() {
 
 cleanup() {
   rm -rf $MODPATH/common 2>/dev/null
+  ui_print " "
+  ui_print "    **************************************"
+  ui_print "    * tweak thermal config *"
+  ui_print "    **************************************"
+  ui_print " "
 }
 
 device_check() {
@@ -32,7 +38,6 @@ device_check() {
       for j in "ro.product.$type" "ro.build.$type" "ro.product.vendor.$type" "ro.vendor.product.$type"; do
         [ "$(sed -n "s/^$j=//p" $i/build.prop 2>/dev/null | head -n 1 | tr '[:upper:]' '[:lower:]')" == "$prop" ] && return 0
       done
-      [ "$type" == "device" ] && [ "$(sed -n "s/^"ro.build.product"=//p" $i/build.prop 2>/dev/null | head -n 1 | tr '[:upper:]' '[:lower:]')" == "$prop" ] && return 0
     fi
   done
   return 1
@@ -112,6 +117,7 @@ prop_process() {
 [ $API -lt 26 ] && DYNLIB=false
 [ -z $DYNLIB ] && DYNLIB=false
 [ -z $DEBUG ] && DEBUG=false
+[ -e "$PERSISTDIR" ] && PERSISTMOD=$PERSISTDIR/magisk/$MODID
 INFO=$NVBASE/modules/.$MODID-files
 ORIGDIR="$MAGISKTMP/mirror"
 if $DYNLIB; then
@@ -141,17 +147,21 @@ if $DEBUG; then
 fi
 
 # Extract files
+ui_print "- Extracting module files"
 unzip -o "$ZIPFILE" -x 'META-INF/*' 'common/functions.sh' -d $MODPATH >&2
 [ -f "$MODPATH/common/addon.tar.xz" ] && tar -xf $MODPATH/common/addon.tar.xz -C $MODPATH/common 2>/dev/null
 
 # Run addons
 if [ "$(ls -A $MODPATH/common/addon/*/install.sh 2>/dev/null)" ]; then
+  ui_print " "; ui_print "- Running Addons -"
   for i in $MODPATH/common/addon/*/install.sh; do
+    ui_print "  Running $(echo $i | sed -r "s|$MODPATH/common/addon/(.*)/install.sh|\1|")..."
     . $i
   done
 fi
 
-# Remove files outside of module directory 
+# Remove files outside of module directory
+ui_print "- Removing old files"
 
 if [ -f $INFO ]; then
   while read LINE; do
@@ -170,7 +180,8 @@ if [ -f $INFO ]; then
   rm -f $INFO
 fi
 
-### Instal
+### Install
+ui_print "- Installing"
 
 [ -f "$MODPATH/common/install.sh" ] && . $MODPATH/common/install.sh
 
@@ -202,12 +213,13 @@ if $DYNLIB; then
     mv -f $MODPATH/system/$FILE $MODPATH/system/vendor/$FILE
     [ "$(ls -A `dirname $MODPATH/system/$FILE`)" ] || rm -rf `dirname $MODPATH/system/$FILE`
   done
-ui_print 'Success'
   # Delete empty lib folders (busybox find doesn't have this capability)
   toybox find $MODPATH/system/lib* -type d -empty -delete >/dev/null 2>&1
 fi
 
 # Set permissions
+ui_print " "
+ui_print "- Setting Permissions"
 set_perm_recursive $MODPATH 0 0 0755 0644
 if [ -d $MODPATH/system/vendor ]; then
   set_perm_recursive $MODPATH/system/vendor 0 0 0755 0644 u:object_r:vendor_file:s0
