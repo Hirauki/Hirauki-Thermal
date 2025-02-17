@@ -14,7 +14,7 @@ wait_until_login() {
   rm -f "$test_file"
 }
 
-su -lp 2000 -c "cmd notification post -S bigtext -t 'W' 'Tag' 'Now now, wait in service. I got special things for this device.'"
+su -lp 2000 -c "cmd notification post -S bigtext -t 'W' 'Tag' 'Unfortunately, the performance has dropped significantly today.'"
 
 cmd settings put global activity_starts_logging_enabled 0
 cmd settings put global ble_scan_always_enabled 0
@@ -23,7 +23,7 @@ cmd settings put global mobile_data_always_on 0
 cmd settings put global network_recommendations_enabled 0
 cmd settings put global wifi_scan_always_enabled 0
 cmd settings put secure adaptive_sleep 0
-cmd settings put secure screensaver_activate_on_dock 0
+cmd settings put secure screensaver_activate_on_dock 0  
 cmd settings put secure screensaver_activate_on_sleep 0
 cmd settings put secure screensaver_enabled 0
 cmd settings put secure send_action_app_error 0
@@ -54,14 +54,17 @@ for pid in $(pgrep thermal); do
 	kill -SIGSTOP $pid
 done
 
-for prop in $(resetprop | grep 'thermal.*running' | awk -F '[][]' '{print $2}'); do
-	resetprop $prop freezed
+for thermal in $(resetprop | awk -F '[][]' '/thermal/ {print $2}'); do
+  if [[ $(resetprop "$thermal") == running ]] || [[ $(resetprop "$thermal") == restarting ]]; then
+    stop "${thermal/init.svc.}"
+    sleep 10
+    resetprop -n "$thermal" stopped
+  fi
 done
 for zone in /sys/class/thermal/thermal_zone*; do
 	lock_val "disabled" $zone/mode
 done
 find /sys/devices/virtual/thermal -type f -exec chmod 000 {} + 2>/dev/null
-
 echo "0" > /sys/kernel/msm_thermal/enabled
 echo "N" > /sys/module/msm_thermal/parameters/enabled
 echo "0" > /sys/module/msm_thermal/core_control/enabled
@@ -159,22 +162,25 @@ echo "0" > "/sys/module/printk/parameters/time"
 echo "1" > "/sys/module/printk/parameters/console_suspend"
 echo "1" > "/sys/module/printk/parameters/ignore_loglevel"
 echo "off" > "/proc/sys/kernel/printk_devkmsg"
+echo "0" > /proc/sys/kernel/hung_task_timeout_secs
+echo "0" > "/proc/sys/vm/panic_on_oom"
+echo "0" > "/proc/sys/kernel/panic_on_oops"
+echo "0" > "/proc/sys/kernel/panic"
+echo "0" > "/proc/sys/kernel/softlockup_panic"
 
-echo "0" > /sys/kernel/rcu_expedited 0
-echo "0" > /sys/kernel/rcu_normal 0
-echo "0" > /sys/devices/system/cpu/isolated 0
-echo "0" > /proc/sys/kernel/sched_tunable_scaling 0
-echo "1" > /proc/sys/kernel/timer_migration 1
-echo "0" > /proc/sys/kernel/hung_task_timeout_secs 0
-echo "25" > /proc/sys/kernel/perf_cpu_time_max_percent 25
-echo "1" > /proc/sys/kernel/sched_autogroup_enabled 1
-echo "0" > /proc/sys/kernel/sched_child_runs_first 0
+echo "0" > /sys/kernel/rcu_expedited
+echo "0" > /sys/kernel/rcu_normal
+echo "0" > /sys/devices/system/cpu/isolated
+echo "0" > /proc/sys/kernel/sched_tunable_scaling
+echo "1" > /proc/sys/kernel/timer_migration
+echo "55" > /proc/sys/kernel/perf_cpu_time_max_percent
+echo "1" > /proc/sys/kernel/sched_autogroup_enabled
+echo "0" > /proc/sys/kernel/sched_child_runs_first
 echo "10000000" > /proc/sys/kernel/sched_latency_ns 
 echo "2000000" > /proc/sys/kernel/sched_wakeup_granularity_ns 
 echo "3200000" > /proc/sys/kernel/sched_min_granularity_ns 
 echo "2000000" > /proc/sys/kernel/sched_migration_cost_ns 
 echo "32" > /proc/sys/kernel/sched_nr_migrate
-
 
 for queue in /sys/block/*/queue/; do
     if [ -f "$queue/scheduler" ]; then
@@ -228,7 +234,6 @@ fstrim -v /odm
 fstrim -v /data/dalvik-cache
 
 su -lp 2000 -c "cmd notification post -S bigtext -t 'W' 'Tag' 'Wow, looks like those devices are heating up. Are you calling me out for this?'"
-
     exit 0
     
     
