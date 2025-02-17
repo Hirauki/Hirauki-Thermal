@@ -1,4 +1,3 @@
-
 #!/system/bin/sh
 wait_until_login() {
   while [[ "$(getprop sys.boot_completed)" != "1" ]]; do
