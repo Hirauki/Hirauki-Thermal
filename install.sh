@@ -107,3 +107,15 @@ set_permissions() {
 }
 
 # You can add more functions to assist your custom script code
+# Construct your own list here
+REPLACE="
+/system/vendor/etc/thermal-engine-map.conf
+/system/vendor/etc/thermal-engine.conf
+/system/vendor/etc/thermal-engine-normal.conf
+/system/vendor/etc/thermal-engine-sgame.conf
+/system/vendor/etc/thermal-engine-pubgmhd.conf
+/system/vendor/etc/perf/commonresourceconfigs.xml
+/system/vendor/etc/perf/perfboostsconfig.xml
+/system/vendor/etc/perf/targetconfig.xml
+/system/vendor/etc/perf/targetresourceconfigs.xml
+"
