@@ -5,6 +5,8 @@
 - Fix slow charging and change value heat up to 50
 - Change thermal with based from @Hirauki
 - Adding scheduler for CPU
+- Add some Scheduler on Kernel
+- Disable Printk and kernel panic
 
 ## 7.1 (2024-12-29)
 - Update to 7.1 Lucia Crimson
