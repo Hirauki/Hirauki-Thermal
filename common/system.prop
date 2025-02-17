@@ -13,19 +13,27 @@ ro.sys.fw.bg_apps_limit=10
 dalvik.vm.heapgrowthlimit=256m
 dalvik.vm.heapsize=512m
 
+# Memory Optimization
+ro.sys.fw.bservice_enable=true
+ro.sys.fw.bservice_limit=128
+ro.sys.fw.bservice_age=10000
+ro.sys.fw.bg_apps_limit=256
+ro.vendor.qti.sys.fw.bservice_enable=true
+ro.vendor.qti.sys.fw.bservice_limit=128
+ro.vendor.qti.sys.fw.bservice_age=10000
+ro.vendor.qti.sys.fw.bg_apps_limit=256
+
 # Property to enable app trigger
 ro.vendor.at_library=libqti-at.so
 persist.vendor.qti.games.gt.prof=1
 
 # Performance
-debug.performance.tuning=1
 persist.sys.debug.gr.swapinterval=1
 persist.sys.egl.swapinterval=1
-ro.min.fling_velocity=8000
-ro.max.fling_velocity=12000
+ro.max.fling_velocity=20000
+ro.min.fling_velocity=18000
 vendor.perf.framepacing.enable=1
 vendor.performance.gbe=1
-video.accelerate.hw=1   
 
 # FPS Stabilizer
 debug.sf.showupdates=0 
@@ -58,6 +66,7 @@ ro.ui.pipeline=skiaglthreaded
 #Skia tracing disabler
 debug.hwui.render_dirty_regions=false
 debug.hwui.skia_atrace_enabled=false
+debug.renderthread.skia.reduceopstasksplitting=true
 renderthread.skia.reduceopstasksplitting=true
 renderthread.skiagl.reduceopstasksplitting=true
 
