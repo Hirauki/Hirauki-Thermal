@@ -189,6 +189,19 @@ resetprop -n sys.wifitracing.started 0
 resetprop -n vendor.vidc.debug.level 0
 resetprop -n vidc.debug.level 0
 ####################################
+#Better Resolution Render
+####################################
+ro.hwui.texture_cache_size=72
+ro.hwui.layer_cache_size=48
+ro.hwui.gradient_cache_size=2
+ro.hwui.r_buffer_cache_size=8
+ro.hwui.path_cache_size=32
+ro.hwui.drop_shadow_cache_size=6
+ro.hwui.text_small_cache_width=1024
+ro.hwui.text_small_cache_height=1024
+ro.hwui.text_large_cache_width=2048
+ro.hwui.text_large_cache_height=2048
+####################################
 # DalvikHyperthreading (by @modulostk)
 ####################################
 resetprop -n persist.sys.dalvik.hyperthreading true
