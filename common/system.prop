@@ -8,6 +8,24 @@ ro.vendor.dfps.enable=false
 # disable cpu vsync
 debug.cpurend.vsync=false
 
+# GPU Turbo Boost system properties
+debug.composition.type=gpu
+debug.enabletr=true
+debug.gr.numframebuffers=5
+debug.egl.buffcount=5
+debug.hwui.level=0
+debug.hwui.render_dirty_regions=false
+debug.overlayui.enable=1
+debug.performance.tuning=1
+hw3d.force=1
+persist.sys.composition.type=c2d
+persist.sys.ui.hw=1
+ro.config.enable.hw_accel=true
+ro.product.gpu.driver=1
+ro.fb.mode=1
+ro.sf.compbypass.enable=0
+video.accelerate.hw=1
+
 #ram
 ro.sys.fw.bg_apps_limit=10
 dalvik.vm.heapgrowthlimit=256m
