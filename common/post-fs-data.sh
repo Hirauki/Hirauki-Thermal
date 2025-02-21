@@ -227,15 +227,13 @@ settings put global dropbox:dumpsys:procstats disabled
 settings put global dropbox:dumpsys:usagestats disabled
 while :
 do
-sf=0
-while :
-do
-if [ $sf -eq 1 ]
-then
-service call SurfaceFlinger 1008 i32 1
-break
-else
-sf=$(service list | grep -c "SurfaceFlinger")
-sleep 2
-fi
+    sf=$(service list | grep -c "SurfaceFlinger:")
+
+    if [ $sf -eq 1 ]
+    then
+        service call SurfaceFlinger 1008 i32 1
+        break
+    else
+        sleep 2
+    fi
 done
