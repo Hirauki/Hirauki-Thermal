@@ -109,14 +109,17 @@ ext 5000000 /sys/class/power_supply/pc_port/current_max
 ext 5500000 /sys/class/power_supply/battery/constant_charge_current_max
 
 
-echo "0" > /sys/class/kgsl/kgsl-3d0/bus_split
-echo "0" > /sys/class/kgsl/kgsl-3d0/throttling
-echo "1" > /sys/class/kgsl/kgsl-3d0/force_clk_on
-echo "1" > /sys/class/kgsl/kgsl-3d0/force_rail_on
-echo "1" > /sys/class/kgsl/kgsl-3d0/force_bus_on
-echo "1" > /sys/class/kgsl/kgsl-3d0/force_no_nap
-
-lib_names="com.miHoYo. com.activision. com.garena. com.roblox. com.epicgames com.dts. UnityMain libunity.so libil2cpp.so libmain.so libcri_vip_unity.so libopus.so libxlua.so libUE4.so libAsphalt9.so libnative-lib.so libRiotGamesApi.so libResources.so libagame.so libapp.so libflutter.so libMSDKCore.so libFIFAMobileNeon.so libUnreal.so libEOSSDK.so libcocos2dcpp.so libgodot_android.so libgdx.so libgdx-box2d.so libminecraftpe.so libLive2DCubismCore.so libyuzu-android.so libryujinx.so libcitra-android.so libhdr_pro_engine.so libandroidx.graphics.path.so libeffect.so"
+sleep 10
+echo 0 > /sys/class/kgsl/kgsl-3d0/throttling
+echo 0 > /sys/class/kgsl/kgsl-3d0/bus_split
+echo 1 > /sys/class/kgsl/kgsl-3d0/force_no_nap
+echo 1 > /sys/class/kgsl/kgsl-3d0/force_rail_on
+echo 1 > /sys/class/kgsl/kgsl-3d0/force_bus_on
+echo 1 > /sys/class/kgsl/kgsl-3d0/force_clk_on
+#write /proc/sys/kernel/sched_lib_name "com.miHoYo., com.activision., UnityMain, libunity.so, libil2cpp.so"
+echo "com.miHoYo., com.activision., UnityMain, libunity.so, libil2cpp.so, libfb.so" > /proc/sys/kernel/sched_lib_name
+#write /proc/sys/kernel/sched_lib_mask_force 255
+echo "240" > /proc/sys/kernel/sched_lib_mask_force
 
 for path in /proc/sys/kernel/sched_lib_name /proc/sys/kernel/sched_lib_mask_force /proc/sys/walt/sched_lib_name /proc/sys/walt/sched_lib_mask_force; do
     if [ -w "$path" ]; then
@@ -209,18 +212,21 @@ done
 setprop debug.sf.hw 1
 setprop debug.sf.latch_unsignaled 1
 
+change_task_cgroup "surfaceflinger" "top-app" "cpuset"
+change_task_cgroup "surfaceflinger" "foreground" "stune"
+change_task_cgroup "android.hardware.graphics.composer" "top-app" "cpuset"
+change_task_cgroup "android.hardware.graphics.composer" "foreground" "stune"
+change_task_nice "surfaceflinger" "-20"
+change_task_nice "android.hardware.graphics.composer" "-20"
+change_task_affinity ".hardware." "0f"
+change_task_affinity ".hardware.biometrics.fingerprint" "ff"
+change_task_affinity ".hardware.camera.provider" "ff"
+change_task_nice "system_server" "-18"
+change_task_nice "com.android.systemui" "-18"
+
 chmod 755 /sys/module/qti_haptics/parameters/vmax_mv_override
 echo 500 > /sys/module/qti_haptics/parameters/vmax_mv_override
 echo 0 > /sys/module/rmnet_data/parameters/rmnet_data_log_level
-
-echo "3" > /proc/sys/vm/drop_caches
-echo "1" > /proc/sys/vm/compact_memory
-echo 0 > /d/tracing/tracing_on
-echo 0 > /sys/kernel/debug/rpm_log
-
-echo "0:1190000" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_freq
-echo "120" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_ms
-echo "0" > /sys/devices/system/cpu/cpu_boost/sched_boost_on_input
 
 fstrim -v /cache
 fstrim -v /system
@@ -231,6 +237,14 @@ fstrim -v /product
 fstrim -v /metadata
 fstrim -v /odm
 fstrim -v /data/dalvik-cache
+
+echo "3" > /proc/sys/vm/drop_caches
+echo "1" > /proc/sys/vm/compact_memory
+echo 0 > /d/tracing/tracing_on
+echo 0 > /sys/kernel/debug/rpm_log
+
+echo "0:1800000" >/sys/devices/system/cpu/cpu_boost/parameters/input_boost_freq
+echo "230" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_ms
 
 su -lp 2000 -c "cmd notification post -S bigtext -t 'W' 'Tag' 'Wow, looks like those devices are heating up. Are you calling me out for this?'"
     exit 0
