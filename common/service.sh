@@ -184,21 +184,10 @@ echo "3200000" > /proc/sys/kernel/sched_min_granularity_ns
 echo "2000000" > /proc/sys/kernel/sched_migration_cost_ns 
 echo "32" > /proc/sys/kernel/sched_nr_migrate
 
-for queue in /sys/block/*/queue/; do
-    if [ -f "$queue/scheduler" ]; then
-        sched=$(cat "$queue/scheduler")
-        for algo in cfq noop kyber bfq mq-deadline none; do
-            if echo "$sched" | grep -q "$algo"; then
-                echo "$algo" > "$queue/scheduler"
-                break
-            fi
-        done
-        echo 0 > "$queue/add_random"
-        echo 0 > "$queue/iostats"
-        echo 64 > "$queue/read_ahead_kb"
-        echo 512 > "$queue/nr_requests"
-    fi
-done
+	for dir in /sys/block/mmcblk0 /sys/block/mmcblk1 /sys/block/sd*; do
+		# Reduce heuristic read-ahead in exchange for I/O latency
+		apply 32 "$dir/queue/read_ahead_kb"
+	done
 
 for dir in /sys/block/mmcblk0 /sys/block/mmcblk1 /sys/block/sd*; do
     if [ -d "$dir" ]; then
