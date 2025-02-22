@@ -108,7 +108,10 @@ ext 5500000 /sys/class/qcom-battery/restricted_current
 ext 5000000 /sys/class/power_supply/pc_port/current_max
 ext 5500000 /sys/class/power_supply/battery/constant_charge_current_max
 
-
+# Handle case when 'default_gov' is performance
+if echo $default_gov | grep -q performance; then
+	default_gov="schedutil"
+fi
 sleep 10
 echo 0 > /sys/class/kgsl/kgsl-3d0/throttling
 echo 0 > /sys/class/kgsl/kgsl-3d0/bus_split
