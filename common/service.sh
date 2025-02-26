@@ -41,18 +41,6 @@ list_thermal_services() {
 		grep -r "^service" "$rc" | awk '{print $2}'
 	done | grep thermal
 }
-
-for svc in $(list_thermal_services); do
-	echo "Stopping $svc"
-	start $svc
-	stop $svc
-done
-
-for pid in $(pgrep thermal); do
-	echo "Freeze $pid"
-	kill -SIGSTOP $pid
-done
-
 for thermal in $(resetprop | awk -F '[][]' '/thermal/ {print $2}'); do
   if [[ $(resetprop "$thermal") == running ]] || [[ $(resetprop "$thermal") == restarting ]]; then
     stop "${thermal/init.svc.}"
