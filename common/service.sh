@@ -36,27 +36,28 @@ cmd settings put system nearby_scanning_permission_allowed 0
 cmd settings put system rakuten_denwa 0
 cmd settings put system send_security_reports 0
 
-list_thermal_services() {
-	for rc in $(find /system/etc/init -type f && find /vendor/etc/init -type f && find /odm/etc/init -type f); do
-		grep -r "^service" "$rc" | awk '{print $2}'
-	done | grep thermal
-}
 for thermal in $(resetprop | awk -F '[][]' '/thermal/ {print $2}'); do
-  if [[ $(resetprop "$thermal") == running ]] || [[ $(resetprop "$thermal") == restarting ]]; then
+  if [[ $(resetprop "$thermal") == running ]] || [[ $(resetprop "$thermal") == stopped ]]; then
     stop "${thermal/init.svc.}"
     sleep 10
     resetprop -n "$thermal" stopped
   fi
 done
-for zone in /sys/class/thermal/thermal_zone*; do
-	lock_val "disabled" $zone/mode
-done
-find /sys/devices/virtual/thermal -type f -exec chmod 000 {} + 2>/dev/null
-echo "0" > /sys/kernel/msm_thermal/enabled
-echo "N" > /sys/module/msm_thermal/parameters/enabled
-echo "0" > /sys/module/msm_thermal/core_control/enabled
-echo "0" > /sys/module/msm_thermal/vdd_restriction/enabled
-echo "0" > /sys/devices/system/cpu/cpu_boost/sched_boost_on_input
+find /sys/devices/virtual/thermal -type f -exec chmod 000 {} +
+sleep 1
+# Disable Via Props
+  if resetprop dalvik.vm.dexopt.thermal-cutoff | grep -q '2'; then
+    resetprop -n dalvik.vm.dexopt.thermal-cutoff 0
+  fi
+  if resetprop sys.thermal.enable | grep -q 'true'; then
+    resetprop -n sys.thermal.enable false
+  fi
+  if resetprop ro.thermal_warmreset | grep -q 'true'; then
+    resetprop -n ro.thermal_warmreset false
+  fi
+sleep 1    
+# Universal Thermal Disabler
+echo 0 > /sys/class/thermal/thermal_zone*/mode
 sleep 1
   if resetprop dalvik.vm.dexopt.thermal-cutoff | grep -q '2'; then
     resetprop -n dalvik.vm.dexopt.thermal-cutoff 0
