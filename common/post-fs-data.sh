@@ -1,4 +1,3 @@
-
 #!/system/bin/sh
 MODDIR ${0%/*}
 # Set zram configurations
@@ -28,22 +27,6 @@ if [[ ! -d /data/adb/modules/hirauki-thermal/system ]]; then
       touch "${directory}/system/${thermal}"
     fi
 }
-
-MODPATH=/data/adb/modules/hirauki-thermal
-
-mkdir -p "$MODPATH"/system/lib/egl
-mkdir -p "$MODPATH"/system/lib64/egl
-mkdir -p "$MODPATH"/system/vendor/lib/egl
-mkdir -p "$MODPATH"/system/vendor/lib64/egl
-
-model=$(cat /sys/class/kgsl/kgsl-3d0/gpu_model)
-config="0 1 $model"
-
-echo "$config" > "$MODPATH"/system/lib/egl/egl.cfg
-echo "$config" > "$MODPATH"/system/lib64/egl/egl.cfg
-echo "$config" > "$MODPATH"/system/vendor/lib/egl/egl.cfg
-echo "$config" > "$MODPATH"/system/vendor/lib64/egl/egl.cfg
-
     # disable I/O debugging
 echo 0 > /sys/block/dm-0/queue/iostats
 echo 0 > /sys/block/mmcblk0/queue/iostats
