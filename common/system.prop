@@ -5,9 +5,6 @@
 #fps
 ro.vendor.dfps.enable=false
 
-# disable cpu vsync
-debug.cpurend.vsync=false
-
 # GPU Turbo Boost system properties
 debug.composition.type=gpu
 debug.enabletr=true
@@ -26,10 +23,27 @@ ro.fb.mode=1
 ro.sf.compbypass.enable=0
 video.accelerate.hw=1
 
-#ram
-ro.sys.fw.bg_apps_limit=10
-dalvik.vm.heapgrowthlimit=256m
-dalvik.vm.heapsize=512m
+# Disable 4xmsaa
+debug.egl.disable_msaa=true
+debug.egl.disable_msaa=1
+camera.debug.logfile=0
+#disable cpu vysnc
+debug.cpurend.vsync=false
+hwui.disable_vsync=true
+
+# Memory properties
+ro.vendor.qti.sys.fw.bservice_enable=true
+
+# More RAM
+persist.service.pcsync.enable=0
+persist.service.lgospd.enable=0
+
+# Allow purge of assets to free more ram
+persist.sys.purgeable_assets=1
+
+# Property to enable app trigger
+ro.vendor.at_library=libqti-at.so
+persist.vendor.qti.games.gt.prof=1
 
 # Memory Optimization
 ro.sys.fw.bservice_enable=true
@@ -40,31 +54,6 @@ ro.vendor.qti.sys.fw.bservice_enable=true
 ro.vendor.qti.sys.fw.bservice_limit=128
 ro.vendor.qti.sys.fw.bservice_age=10000
 ro.vendor.qti.sys.fw.bg_apps_limit=256
-
-# Property to enable app trigger
-ro.vendor.at_library=libqti-at.so
-persist.vendor.qti.games.gt.prof=1
-
-# Performance
-persist.sys.debug.gr.swapinterval=1
-persist.sys.egl.swapinterval=1
-ro.max.fling_velocity=20000
-ro.min.fling_velocity=18000
-vendor.perf.framepacing.enable=1
-vendor.performance.gbe=1
-
-# FPS Stabilizer
-debug.sf.showupdates=0 
-debug.sf.showcpu=0 
-debug.sf.showbackground=0 
-debug.sf.showfps=0
-
-#disable log
-logcat.live=disable
-persist.service.main.enable=0
-persist.service.system.enable=0
-persist.service.radio.enable=0
-persist.service.events.enable=0
 
 #tweak
 persist.sys.NV_FPSLIMIT=120
@@ -83,10 +72,10 @@ ro.ui.pipeline=skiaglthreaded
 
 #Skia tracing disabler
 debug.hwui.render_dirty_regions=false
+debug.hwui.pipeline=false
+debug.hwui.overdraw=false
 debug.hwui.skia_atrace_enabled=false
-debug.renderthread.skia.reduceopstasksplitting=true
 renderthread.skia.reduceopstasksplitting=true
-renderthread.skiagl.reduceopstasksplitting=true
 
 # Thermal Control
 debug.thermal.throttle.support=false
