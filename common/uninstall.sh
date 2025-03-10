@@ -1,11 +1,17 @@
-#!/system/bin/sh
-
-find /data/dalvik-cache/ -type f \( -name "*.vdex" -o -name "*.odex" -o -name "*.art" \) -delete
-
-find /data/user_de -name '*shaders_cache*' -type f | grep code_cache | while IFS= read -r i; do
-    rm -rf "$i"
-done
-
-find /data -type f -name '*shader*' | while IFS= read -r i; do
- rm -f "$i"
-done
+# Don't modify anything after this
+[[ -f "$INFO" ]] && {
+  while read LINE; do
+    if [[ "$(echo -n "$LINE" | tail -c 1)" == "~" ]]; then
+      continue
+    elif [[ -f "$LINE~" ]]; then
+      mv -f "$LINE~" "$LINE"
+    else
+      rm -f "$LINE"
+      while true; do
+        LINE=$(dirname $LINE)
+        [[ "$(ls -A $LINE 2>/dev/null)" ]] && break 1 || rm -rf "$LINE"
+      done
+    fi
+  done < $INFO
+  rm -f "$INFO"
+}
