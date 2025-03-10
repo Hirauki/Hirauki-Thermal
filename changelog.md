@@ -7,6 +7,7 @@
 - Adding scheduler for CPU
 - Add some Scheduler on Kernel
 - Disable Printk and kernel panic
+- Change other string didn't useable again
 
 ## 7.1 (2024-12-29)
 - Update to 7.1 Lucia Crimson
