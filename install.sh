@@ -73,19 +73,10 @@ on_install() {
   # The following is the default implementation: extract $ZIPFILE/system to $MODPATH
   # Extend/change the logic to whatever you want
   ui_print "- Extracting module files"
-  unzip "$ZIPFILE" "action.sh" "hirauki.png" -d "$MODPATH/" >/dev/null 2>&1
   unzip -o "$ZIPFILE" 'system/*' -d $MODPATH >&2
   unzip -o "$ZIPFILE" 'service.sh' -d $MODPATH >&2
   unzip -o "$ZIPFILE" 'module.prop' -d $MODPATH >&2
   sleep 2
-
-ui_print "- Hirauki Thermal almost finished"
-cp -f "$MODPATH"/hirauki.png /data/local/tmp/ >/dev/null 2>&1
-cp -af "$TMPDIR"/action.sh "$MODPATH"/action.sh >/dev/null 2>&1
-set_perm "$MODPATH/action.sh" 0 0 0755 0755
-set_perm "/data/local/tmp/hirauki.png" 0 0 0644 0644
-
-sleep 2
 }
 
 # Only some special files require specific permissions
@@ -98,7 +89,7 @@ set_permissions() {
   set_perm $MODPATH/service.sh 0 0 0777
   set_perm $MODPATH/system/etc/.nth_fc/.fc_lib 0 0 0777
   set_perm $MODPATH/system/etc/.nth_fc/.fc_main.sh 0 0 0777
-  
+
     # Here are some examples:
   # set_perm_recursive  $MODPATH/system/lib       0     0       0755      0644
   # set_perm  $MODPATH/system/bin/app_process32   0     2000    0755      u:object_r:zygote_exec:s0
