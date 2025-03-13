@@ -13,7 +13,26 @@ wait_until_login() {
   rm -f "$test_file"
 }
 
-su -lp 2000 -c "cmd notification post -S bigtext -t 'W' 'Tag' 'Unfortunately, the performance has dropped significantly today.'"
+su -lp 2000 -c "cmd notification post -S bigtext -t 'The Herta ❌' 'Tag' '*sigh* I have been lost interest in your research potential for today. See you bootloop.'"
+
+# Disable another logging
+sleep 5
+stop traced
+stop tombstoned
+stop tcpdump
+stop cnss_diag
+stop statsd
+stop vendor.perfservice
+stop logcat
+stop logcatd
+stop logd
+stop idd-logreader
+stop idd-logreadermain
+stop stats
+stop dumpstate
+stop vendor.tcpdump
+stop vendor_tcpdump
+stop vendor.cnss_diag
 
 cmd settings put global activity_starts_logging_enabled 0
 cmd settings put global ble_scan_always_enabled 0
@@ -56,7 +75,6 @@ sleep 1
     resetprop -n ro.thermal_warmreset false
   fi
 sleep 1    
-# Universal Thermal Disabler
 echo 0 > /sys/class/thermal/thermal_zone*/mode
 sleep 1
   if resetprop dalvik.vm.dexopt.thermal-cutoff | grep -q '2'; then
@@ -83,7 +101,7 @@ ext() {
         chmod 0444 "\$2"
     fi
 }
-	
+
 ext 5000000 /sys/class/power_supply/usb/current_max
 ext 5100000 /sys/class/power_supply/usb/hw_current_max
 ext 5100000 /sys/class/power_supply/usb/pd_current_max
@@ -156,19 +174,10 @@ echo "0" > "/proc/sys/kernel/panic_on_oops"
 echo "0" > "/proc/sys/kernel/panic"
 echo "0" > "/proc/sys/kernel/softlockup_panic"
 
-	for dir in /sys/block/mmcblk0 /sys/block/mmcblk1 /sys/block/sd*; do
-		# Reduce heuristic read-ahead in exchange for I/O latency
-		apply 32 "$dir/queue/read_ahead_kb"
-	done
-
-for dir in /sys/block/mmcblk0 /sys/block/mmcblk1 /sys/block/sd*; do
-    if [ -d "$dir" ]; then
-        [ ! -e "$dir/queue/iostats" ] || echo 0 > "$dir/queue/iostats"
-        [ ! -e "$dir/queue/nr_requests" ] || echo 64 > "$dir/queue/nr_requests"
-        [ ! -e "$dir/queue/add_random" ] || echo 0 > "$dir/queue/add_random"
-        [ ! -e "$dir/queue/read_ahead_kb" ] || echo 32 > "$dir/queue/read_ahead_kb"
-    fi
-done
+for queue in /sys/block/sd*/queue
+do
+    echo "0" > "$queue/iostats"
+done ;
 
 ####################################
 # Surfaceflinger
@@ -191,6 +200,12 @@ change_task_affinity ".hardware.camera.provider" "ff"
 change_task_nice "system_server" "-18"
 change_task_nice "com.android.systemui" "-18"
 
+for tracing_on in $(find /proc/sys/ -name tracing_on); do
+  write "$tracing_on" 0
+done
+for log_ecn_error in $(find /sys/ -name log_ecn_error); do
+  write "$log_ecn_error" 0
+done
 fstrim -v /cache
 fstrim -v /system
 fstrim -v /vendor
@@ -209,7 +224,7 @@ echo 0 > /sys/kernel/debug/rpm_log
 echo "0:1800000" >/sys/devices/system/cpu/cpu_boost/parameters/input_boost_freq
 echo "230" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_ms
 
-su -lp 2000 -c "cmd notification post -S bigtext -t 'W' 'Tag' 'Wow, looks like those devices are heating up. Are you calling me out for this?'"
+su -lp 2000 -c "cmd notification post -S bigtext -t 'The Herta ✅' 'Tag' 'Why do you get to visit an our Github? I'm Herta, why, why?'"
     exit 0
     
     
