@@ -1,8 +1,8 @@
 id=hirauki-thermal
-name=🍃 Hirauki Thermal
-version=Codename | Wis'Adel 7.2
+name=🍃 Hirauki Thermal (EOL)
+version=Codename | The Herta 7.3
 versionCode=1
 author=Vnnyeol
-description=Aw. The outstanding performance just never ceases to amaze.
+description=I'm perfect enough already.
 Device=Universal
 updateJson=https://raw.githubusercontent.com/Hirauki/Hirauki-Thermal/refs/heads/main/update.json
