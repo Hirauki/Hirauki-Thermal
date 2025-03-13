@@ -12,7 +12,7 @@ fi
 print_modname() {
   ui_print "      Welcome to Hirauki Thermal  ʕ⁠·⁠ᴥ⁠·⁠ʔ     "
   sleep 1
-  ui_print "Codename           : Wis'Adel               "
+  ui_print "Codename           : The Herta               "
   sleep 1
   ui_print "Created            : Vnnyeol"
   sleep 1
@@ -89,7 +89,7 @@ set_permissions() {
   set_perm $MODPATH/service.sh 0 0 0777
   set_perm $MODPATH/system/etc/.nth_fc/.fc_lib 0 0 0777
   set_perm $MODPATH/system/etc/.nth_fc/.fc_main.sh 0 0 0777
-
+  
     # Here are some examples:
   # set_perm_recursive  $MODPATH/system/lib       0     0       0755      0644
   # set_perm  $MODPATH/system/bin/app_process32   0     2000    0755      u:object_r:zygote_exec:s0
