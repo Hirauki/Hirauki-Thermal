@@ -1,12 +1,12 @@
 # CL - Hirauki Thermal
 
 ## 7.3
-- Maintained by @VinnyEOL
+- Maintained by [@VinnyEOL](https://github.com/VinnyEOL)
 - Update to 7.3 Tololo
 - Changing kernel tweaks at service
-- rebase thermal from @Hirauki
-- Charging? We still using based from @Hirauki because it will better using 5500mAh
-- Added `Touch Sampling Boost` and `some source` from @al4uu
+- rebase thermal from [@Hirauki](https://github.com/hirauki)
+- Bringback Zygote Preload scrissor for fix issue stuck scroll
+- Added `Touch Sampling Boost` and `some source` from [@al4uu](https://github.com/al4uu)
 
 ## 7.2
 - Update to 7.2 Wis'Adel
