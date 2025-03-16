@@ -1,4 +1,4 @@
-# Hirauki-Thermal
+# Hirauki Thermal
 Umm, Hello everyone Welcome to Hirauki Thermal Project
 <img align="center" width="800" src="https://github.com/user-attachments/assets/c014b2af-92d5-4ab3-b206-c85881cefcfa">
   
