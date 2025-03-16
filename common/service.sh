@@ -13,26 +13,13 @@ wait_until_login() {
   rm -f "$test_file"
 }
 
-su -lp 2000 -c "cmd notification post -S bigtext -t 'The Herta ❌' 'Tag' '*sigh* I have been lost interest in your research potential for today. See you bootloop.'"
+for svc in logd traced statsd; do
+    if getprop init.svc.$svc | grep -q "running"; then
+        su -c "stop $svc"
+    fi
+done
 
-# Disable another logging
-sleep 5
-stop traced
-stop tombstoned
-stop tcpdump
-stop cnss_diag
-stop statsd
-stop vendor.perfservice
-stop logcat
-stop logcatd
-stop logd
-stop idd-logreader
-stop idd-logreadermain
-stop stats
-stop dumpstate
-stop vendor.tcpdump
-stop vendor_tcpdump
-stop vendor.cnss_diag
+su -lp 2000 -c "cmd notification post -S bigtext -t 'Tololo ❌' 'Tag' '${BOARD_PLATFORM}, that is not it. Let me finish my code...'"
 
 cmd settings put global activity_starts_logging_enabled 0
 cmd settings put global ble_scan_always_enabled 0
@@ -62,8 +49,10 @@ for thermal in $(resetprop | awk -F '[][]' '/thermal/ {print $2}'); do
     resetprop -n "$thermal" stopped
   fi
 done
-find /sys/devices/virtual/thermal -type f -exec chmod 000 {} +
 sleep 1
+find /sys/ -type f -name "*throttling*" | while IFS= read -r throttling; do
+    [ -w "$throttling" ] && echo 0 > "$throttling" 2>/dev/null
+done
 # Disable Via Props
   if resetprop dalvik.vm.dexopt.thermal-cutoff | grep -q '2'; then
     resetprop -n dalvik.vm.dexopt.thermal-cutoff 0
@@ -115,6 +104,7 @@ ext 5500000 /sys/class/qcom-battery/restricted_current
 ext 5000000 /sys/class/power_supply/pc_port/current_max
 ext 5500000 /sys/class/power_supply/battery/constant_charge_current_max
 
+
 if [ -e /sys/class/kgsl/kgsl-3d0/devfreq/governor ]; then
   echo "msm-adreno-tz" > /sys/class/kgsl/kgsl-3d0/devfreq/governor
 fi
@@ -159,53 +149,68 @@ rm -rf /data/vendor/wlan_logs
 touch /data/vendor/wlan_logs
 chmod 000 /data/vendor/wlan_logs
 
-echo "0 0 0 0" > "/proc/sys/kernel/printk"
-echo "0" > "/sys/kernel/printk_mode/printk_mode"
-echo "0" > "/sys/module/printk/parameters/cpu"
-echo "0" > "/sys/module/printk/parameters/pid"
-echo "0" > "/sys/module/printk/parameters/printk_ratelimit"
-echo "0" > "/sys/module/printk/parameters/time"
-echo "1" > "/sys/module/printk/parameters/console_suspend"
-echo "1" > "/sys/module/printk/parameters/ignore_loglevel"
-echo "off" > "/proc/sys/kernel/printk_devkmsg"
-echo "0" > /proc/sys/kernel/hung_task_timeout_secs
-echo "0" > "/proc/sys/vm/panic_on_oom"
-echo "0" > "/proc/sys/kernel/panic_on_oops"
-echo "0" > "/proc/sys/kernel/panic"
-echo "0" > "/proc/sys/kernel/softlockup_panic"
-
-for queue in /sys/block/sd*/queue
-do
-    echo "0" > "$queue/iostats"
-done ;
-
-####################################
-# Surfaceflinger
-####################################
+for touch in \
+    /sys/module/msm_performance/parameters/touchboost \
+    /sys/power/pnpmgr/touch_boost \
+    /proc/perfmgr/tchbst/kernel/tb_enable \
+    /sys/devices/virtual/touch/touch_boost \
+    /sys/module/msm_perfmon/parameters/touch_boost_enable \
+    /sys/devices/platform/goodix_ts.0/switch_report_rate; do
+    if [ -f "$touch" ]; then
+        chmod 644 "$touch" >/dev/null 2>&1
+        echo "1" > "$touch" 2>/dev/null
+        chmod 444 "$touch" >/dev/null 2>&1
+    fi
+done
 setprop debug.sf.hw 1
 setprop debug.sf.latch_unsignaled 1
 
-####################################
-#Decrease Render treat speed
-####################################
-change_task_cgroup "surfaceflinger" "top-app" "cpuset"
-change_task_cgroup "surfaceflinger" "foreground" "stune"
-change_task_cgroup "android.hardware.graphics.composer" "top-app" "cpuset"
-change_task_cgroup "android.hardware.graphics.composer" "foreground" "stune"
-change_task_nice "surfaceflinger" "-20"
-change_task_nice "android.hardware.graphics.composer" "-20"
-change_task_affinity ".hardware." "0f"
-change_task_affinity ".hardware.biometrics.fingerprint" "ff"
-change_task_affinity ".hardware.camera.provider" "ff"
-change_task_nice "system_server" "-18"
-change_task_nice "com.android.systemui" "-18"
-
+for queue in /sys/block/*/queue; do
+    echo "0" > "$queue/iostats"
+done
 for tracing_on in $(find /proc/sys/ -name tracing_on); do
   write "$tracing_on" 0
 done
 for log_ecn_error in $(find /sys/ -name log_ecn_error); do
   write "$log_ecn_error" 0
 done
+
+echo "0" > /proc/sys/kernel/panic
+echo "0" > /proc/sys/kernel/panic_on_oops
+echo "0" > /proc/sys/kernel/panic_on_rcu_stall
+echo "0" > /proc/sys/kernel/panic_on_warn
+echo "0" > /sys/module/kernel/parameters/panic
+echo "0" > /sys/module/kernel/parameters/panic_on_warn
+echo "0" > /sys/module/kernel/parameters/panic_on_oops
+echo "0" > /sys/vm/panic_on_oom
+
+echo "0 0 0 0" > /proc/sys/kernel/printk
+echo "0" > /sys/kernel/printk_mode/printk_mode
+echo "0" > /sys/module/printk/parameters/cpu
+echo "0" > /sys/module/printk/parameters/pid
+echo "0" > /sys/module/printk/parameters/printk_ratelimit
+echo "0" > /sys/module/printk/parameters/time
+echo "1" > /sys/module/printk/parameters/console_suspend
+echo "1" > /sys/module/printk/parameters/ignore_loglevel
+echo "off" > /proc/sys/kernel/printk_devkmsg
+echo "0" > /proc/sys/kernel/hung_task_timeout_secs
+echo "0" > /proc/sys/kernel/softlockup_panic
+
+echo "3" > /proc/sys/vm/drop_caches
+echo "1" > /proc/sys/vm/compact_memory
+echo 0 > /d/tracing/tracing_on
+echo 0 > /sys/kernel/debug/rpm_log
+echo "0" > /proc/sys/debug/exception-trace
+echo "80" > /proc/sys/vm/vfs_cache_pressure
+echo "0" > /sys/kernel/debug/dri/0/debug/enable
+echo "1" > /sys/module/spurious/parameters/noirqdebug
+echo "0" > /sys/kernel/debug/sde_rotator0/evtlog/enable
+
+
+echo "0:1800000" >/sys/devices/system/cpu/cpu_boost/parameters/input_boost_freq
+echo "230" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_ms
+sleep 5
+
 fstrim -v /cache
 fstrim -v /system
 fstrim -v /vendor
@@ -216,15 +221,8 @@ fstrim -v /metadata
 fstrim -v /odm
 fstrim -v /data/dalvik-cache
 
-echo "3" > /proc/sys/vm/drop_caches
-echo "1" > /proc/sys/vm/compact_memory
-echo 0 > /d/tracing/tracing_on
-echo 0 > /sys/kernel/debug/rpm_log
 
-echo "0:1800000" >/sys/devices/system/cpu/cpu_boost/parameters/input_boost_freq
-echo "230" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_ms
-
-su -lp 2000 -c "cmd notification post -S bigtext -t 'The Herta ✅' 'Tag' 'Why do you get to visit an our Github? I'm Herta, why, why?'"
+su -lp 2000 -c "cmd notification post -S bigtext -t 'Tololo ✅' 'Tag' '${BOARD_PLATFORM}, Now that the meeting is over, I will go back to my code ahead of your modules.'"
     exit 0
     
     
