@@ -12,11 +12,11 @@ fi
 print_modname() {
   ui_print "      Welcome to Hirauki Thermal  ʕ⁠·⁠ᴥ⁠·⁠ʔ     "
   sleep 1
-  ui_print "Codename           : The Herta               "
+  ui_print "Codename           : Tololo               "
   sleep 1
-  ui_print "Created            : Vnnyeol"
+  ui_print "Created            : Vnnyeol x Hirauki"
   sleep 1
-  ui_print "Publisher          : Vnnyeol"
+  ui_print "Publisher          : Hirauki"
   sleep 1
   ui_print "Update             : https://t.me/hgane_rei"
   sleep 1
