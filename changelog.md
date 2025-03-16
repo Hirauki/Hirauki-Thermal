@@ -6,7 +6,7 @@
 - Changing kernel tweaks at service
 - rebase thermal from @Hirauki
 - Charging? We still using based from @Hirauki because it will better using 5500mAh
-- Added 'touch sampling rate boost' and some source from @al4uu
+- Added `Touch Sampling Boost` and `some source` from @al4uu
 
 ## 7.2
 - Update to 7.2 Wis'Adel
