@@ -30,19 +30,19 @@ if [[ ! -d /data/adb/modules/hirauki-thermal/system ]]; then
     fi
 }
     # disable I/O debugging
-echo 0 > /sys/block/dm-0/queue/iostats
-echo 0 > /sys/block/mmcblk0/queue/iostats
-echo 0 > /sys/block/mmcblk0rpmb/queue/iostats
-echo 0 > /sys/block/mmcblk1/queue/iostats
-echo 0 > /sys/block/loop0/queue/iostats
-echo 0 > /sys/block/loop1/queue/iostats
-echo 0 > /sys/block/loop2/queue/iostats
-echo 0 > /sys/block/loop3/queue/iostats
-echo 0 > /sys/block/loop4/queue/iostats
-echo 0 > /sys/block/loop5/queue/iostats
-echo 0 > /sys/block/loop6/queue/iostats
-echo 0 > /sys/block/loop7/queue/iostats
-echo 0 > /sys/block/sda/queue/iostats
+echo "0" > /sys/block/sda/queue/iostats
+echo "0" > /sys/block/loop1/queue/iostats
+echo "0" > /sys/block/loop2/queue/iostats
+echo "0" > /sys/block/loop3/queue/iostats
+echo "0" > /sys/block/loop4/queue/iostats
+echo "0" > /sys/block/loop5/queue/iostats
+echo "0" > /sys/block/loop6/queue/iostats
+echo "0" > /sys/block/loop7/queue/iostats
+echo "0" > /sys/block/dm-0/queue/iostats
+echo "0" > /sys/block/loop0/queue/iostats
+echo "0" > /sys/block/mmcblk1/queue/iostats
+echo "0" > /sys/block/mmcblk0/queue/iostats
+echo "0" > /sys/block/mmcblk0rpmb/queue/iostats
 
 #sqlitelog
 resetprop -n debug.sqlite.journalmode OFF
