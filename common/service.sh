@@ -19,7 +19,7 @@ for svc in logd traced statsd; do
     fi
 done
 
-su -lp 2000 -c "cmd notification post -S bigtext -t 'Tololo ❌' 'Tag' '${BOARD_PLATFORM}, that is not it. Let me finish my code...'"
+su -lp 2000 -c "cmd notification post -S bigtext -t 'Tololo ❌' 'Tag' '$(getprop ro.soc.model), that is not it. Let me finish my code...'"
 
 cmd settings put global activity_starts_logging_enabled 0
 cmd settings put global ble_scan_always_enabled 0
@@ -222,7 +222,7 @@ fstrim -v /odm
 fstrim -v /data/dalvik-cache
 
 
-su -lp 2000 -c "cmd notification post -S bigtext -t 'Tololo ✅' 'Tag' '${BOARD_PLATFORM}, Now that the meeting is over, I will go back to my code ahead of your modules.'"
+su -lp 2000 -c "cmd notification post -S bigtext -t 'Tololo ✅' 'Tag' '$(getprop ro.soc.model), Now that the meeting is over, I will go back to my code ahead of your modules.'"
     exit 0
     
     
