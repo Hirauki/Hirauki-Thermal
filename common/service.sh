@@ -19,7 +19,7 @@ for svc in logd traced statsd; do
     fi
 done
 
-su -lp 2000 -c "cmd notification post -S bigtext -t 'Tololo ❌' 'Tag' '$(getprop ro.soc.model), that is not it. Let me finish my code...'"
+su -lp 2000 -c "cmd notification post -S bigtext -t 'Tololo ❌' 'Tag' '$(getprop ro.board.platform), that is not it. Let me finish my code...'"
 
 cmd settings put global activity_starts_logging_enabled 0
 cmd settings put global ble_scan_always_enabled 0
@@ -41,6 +41,11 @@ cmd settings put system nearby_scanning_enabled 0
 cmd settings put system nearby_scanning_permission_allowed 0
 cmd settings put system rakuten_denwa 0
 cmd settings put system send_security_reports 0
+su -c "pm disable com.google.android.gms/com.google.android.gms.nearby.bootstrap.service.NearbyBootstrapService"
+su -c "pm disable com.google.android.gms/NearbyMessagesService"
+su -c "pm disable com.google.android.gms/com.google.android.gms.nearby.connection.service.NearbyConnectionsAndroidService"
+su -c "pm disable com.google.android.gms/com.google.location.nearby.direct.service.NearbyDirectService"
+su -c 'pm enable com.google.android.gsf/.update.SystemUpdateServiceSecretCodeReceiver'
 
 for thermal in $(resetprop | awk -F '[][]' '/thermal/ {print $2}'); do
   if [[ $(resetprop "$thermal") == running ]] || [[ $(resetprop "$thermal") == stopped ]]; then
@@ -83,6 +88,9 @@ sleep 1
     for therm_serv in $thermal_prop; do
         stop $therm_serv
     done
+    if [ -e /sys/kernel/fast_charge/force_fast_charge ]; then
+  echo "1" > /sys/kernel/fast_charge/force_fast_charge
+fi
 ext() {
     if [ -f "\$2" ]; then
         chmod 0666 "\$2"
@@ -91,24 +99,23 @@ ext() {
     fi
 }
 
-ext 5000000 /sys/class/power_supply/usb/current_max
-ext 5100000 /sys/class/power_supply/usb/hw_current_max
-ext 5100000 /sys/class/power_supply/usb/pd_current_max
-ext 5100000 /sys/class/power_supply/usb/ctm_current_max
-ext 5000000 /sys/class/power_supply/usb/sdp_current_max
-ext 5000000 /sys/class/power_supply/main/current_max
-ext 5100000 /sys/class/power_supply/main/constant_charge_current_max
-ext 5000000 /sys/class/power_supply/battery/current_max
-ext 5100000 /sys/class/power_supply/battery/constant_charge_current_max
-ext 5500000 /sys/class/qcom-battery/restricted_current
-ext 5000000 /sys/class/power_supply/pc_port/current_max
-ext 5500000 /sys/class/power_supply/battery/constant_charge_current_max
+ext 6700000 /sys/class/power_supply/usb/current_max
+ext 6700000 /sys/class/power_supply/usb/hw_current_max
+ext 6700000 /sys/class/power_supply/usb/pd_current_max
+ext 6700000 /sys/class/power_supply/usb/ctm_current_max
+ext 6700000 /sys/class/power_supply/usb/sdp_current_max
+ext 6700000 /sys/class/power_supply/main/current_max
+ext 6700000 /sys/class/power_supply/main/constant_charge_current_max
+ext 6700000 /sys/class/power_supply/battery/current_max
+ext 6700000 /sys/class/power_supply/battery/constant_charge_current_max
+ext 6700000 /sys/class/qcom-battery/restricted_current
+ext 6700000 /sys/class/power_supply/pc_port/current_max
+ext 6700000 /sys/class/power_supply/battery/constant_charge_current_max
 
 
 if [ -e /sys/class/kgsl/kgsl-3d0/devfreq/governor ]; then
   echo "msm-adreno-tz" > /sys/class/kgsl/kgsl-3d0/devfreq/governor
 fi
-
 find /sys/devices/system/cpu -maxdepth 1 -name 'cpu?' | while IFS= read -r cpu; do
   echo performance > "$cpu/cpufreq/scaling_governor"
 done
@@ -184,6 +191,7 @@ echo "0" > /sys/module/kernel/parameters/panic_on_warn
 echo "0" > /sys/module/kernel/parameters/panic_on_oops
 echo "0" > /sys/vm/panic_on_oom
 
+echo '0' > /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk
 echo "0 0 0 0" > /proc/sys/kernel/printk
 echo "0" > /sys/kernel/printk_mode/printk_mode
 echo "0" > /sys/module/printk/parameters/cpu
@@ -196,7 +204,11 @@ echo "off" > /proc/sys/kernel/printk_devkmsg
 echo "0" > /proc/sys/kernel/hung_task_timeout_secs
 echo "0" > /proc/sys/kernel/softlockup_panic
 
-echo "3" > /proc/sys/vm/drop_caches
+echo "0:1800000" >/sys/devices/system/cpu/cpu_boost/parameters/input_boost_freq
+echo "230" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_ms
+sleep 5
+
+echo '3' > /proc/sys/vm/drop_caches
 echo "1" > /proc/sys/vm/compact_memory
 echo 0 > /d/tracing/tracing_on
 echo 0 > /sys/kernel/debug/rpm_log
@@ -205,24 +217,12 @@ echo "80" > /proc/sys/vm/vfs_cache_pressure
 echo "0" > /sys/kernel/debug/dri/0/debug/enable
 echo "1" > /sys/module/spurious/parameters/noirqdebug
 echo "0" > /sys/kernel/debug/sde_rotator0/evtlog/enable
+fstrim /cache
+fstrim /system
+fstrim /data
 
 
-echo "0:1800000" >/sys/devices/system/cpu/cpu_boost/parameters/input_boost_freq
-echo "230" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_ms
-sleep 5
-
-fstrim -v /cache
-fstrim -v /system
-fstrim -v /vendor
-fstrim -v /data
-fstrim -v /preload
-fstrim -v /product
-fstrim -v /metadata
-fstrim -v /odm
-fstrim -v /data/dalvik-cache
-
-
-su -lp 2000 -c "cmd notification post -S bigtext -t 'Tololo ✅' 'Tag' '$(getprop ro.soc.model), Now that the meeting is over, I will go back to my code ahead of your modules.'"
+su -lp 2000 -c "cmd notification post -S bigtext -t 'Tololo ✅' 'Tag' '$(getprop ro.board.platform), Now that the meeting is over, I will go back to my code ahead of your modules.'"
     exit 0
     
     
