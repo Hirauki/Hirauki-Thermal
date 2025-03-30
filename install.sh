@@ -14,7 +14,7 @@ print_modname() {
   sleep 1
   ui_print "Codename           : Tololo               "
   sleep 1
-  ui_print "Created            : Vnnyeol x Hirauki"
+  ui_print "Created            : Vnnyeol"
   sleep 1
   ui_print "Publisher          : Hirauki"
   sleep 1
@@ -30,7 +30,7 @@ print_modname() {
   sleep 1
   ui_print "° Android  : $(getprop ro.build.version.release) "
   sleep 1
-  ui_print "° BRAND    : $(getprop ro.product.system.brand) "
+  ui_print "° BRAND    : $(getprop ro.product.model) "
   sleep 1
   ui_print "° CODE     : $(getprop ro.product.board) "
   sleep 1
