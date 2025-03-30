@@ -13,13 +13,26 @@ wait_until_login() {
   rm -f "$test_file"
 }
 
+su -lp 2000 -c "cmd notification post -S bigtext -t 'Tololo ❌' 'Tag' '$(getprop ro.product.marketname), that is not it. Let me finish my code...'"
+
 for svc in logd traced statsd; do
     if getprop init.svc.$svc | grep -q "running"; then
         su -c "stop $svc"
     fi
 done
+for component in LLCC L3 DDR DDRQOS; do
+    base_path="/sys/devices/system/cpu/bus_dcvs/$component"
+    [ ! -d "$base_path" ] && continue
+    freq_file="$base_path/available_frequencies"
+    [ ! -f "$freq_file" ] && continue
 
-su -lp 2000 -c "cmd notification post -S bigtext -t 'Tololo ❌' 'Tag' '$(getprop ro.board.platform), that is not it. Let me finish my code...'"
+    freq=$(cat "$freq_file" | tr ' ' '\n' | sort -nr | head -n 1)
+    [ -z "$freq" ] && continue
+
+    for path in "$base_path"/*/max_freq "$base_path"/*/min_freq; do
+        [ -e "$path" ] && chmod 644 "$path" && echo "$freq" > "$path" && chmod 444 "$path"
+    done
+done
 
 cmd settings put global activity_starts_logging_enabled 0
 cmd settings put global ble_scan_always_enabled 0
@@ -112,12 +125,26 @@ ext 6700000 /sys/class/qcom-battery/restricted_current
 ext 6700000 /sys/class/power_supply/pc_port/current_max
 ext 6700000 /sys/class/power_supply/battery/constant_charge_current_max
 
+for cpu in /sys/devices/system/cpu/*/cpufreq; do
+    [ -f "$cpu/scaling_governor" ] && echo performance > "$cpu/scaling_governor" 2>/dev/null
 
+    if [ -f "$cpu/cpuinfo_max_freq" ]; then
+        cpu_maxfreq=$(cat "$cpu/cpuinfo_max_freq")
+        if [ -n "$cpu_maxfreq" ]; then
+            for freq in scaling_max_freq scaling_min_freq; do
+                target="$cpu/$freq"
+                if [ -f "$target" ]; then
+                    chmod 644 "$target" >/dev/null 2>&1
+                    echo "$cpu_maxfreq" > "$target" 2>/dev/null
+                    chmod 444 "$target" >/dev/null 2>&1
+                fi
+            done
+        fi
+    fi
+done
 if [ -e /sys/class/kgsl/kgsl-3d0/devfreq/governor ]; then
   echo "msm-adreno-tz" > /sys/class/kgsl/kgsl-3d0/devfreq/governor
 fi
-find /sys/devices/system/cpu -maxdepth 1 -name 'cpu?' | while IFS= read -r cpu; do
-  echo performance > "$cpu/cpufreq/scaling_governor"
 done
 sleep 10
 echo 0 > /sys/class/kgsl/kgsl-3d0/throttling
@@ -156,6 +183,8 @@ rm -rf /data/vendor/wlan_logs
 touch /data/vendor/wlan_logs
 chmod 000 /data/vendor/wlan_logs
 
+setprop debug.sf.hw 1
+setprop debug.sf.latch_unsignaled 1
 for touch in \
     /sys/module/msm_performance/parameters/touchboost \
     /sys/power/pnpmgr/touch_boost \
@@ -169,8 +198,6 @@ for touch in \
         chmod 444 "$touch" >/dev/null 2>&1
     fi
 done
-setprop debug.sf.hw 1
-setprop debug.sf.latch_unsignaled 1
 
 for queue in /sys/block/*/queue; do
     echo "0" > "$queue/iostats"
@@ -203,9 +230,12 @@ echo "1" > /sys/module/printk/parameters/ignore_loglevel
 echo "off" > /proc/sys/kernel/printk_devkmsg
 echo "0" > /proc/sys/kernel/hung_task_timeout_secs
 echo "0" > /proc/sys/kernel/softlockup_panic
-
-echo "0:1800000" >/sys/devices/system/cpu/cpu_boost/parameters/input_boost_freq
-echo "230" > /sys/devices/system/cpu/cpu_boost/parameters/input_boost_ms
+echo "55" /proc/sys/kernel/perf_cpu_time_max_percent
+echo "24000" /proc/sys/kernel/perf_event_max_sample_rate
+echo "570" /proc/sys/kernel/perf_event_mlock_kb
+echo "0" /proc/sys/kernel/sched_boost
+echo "95" /proc/sys/kernel/sched_downmigrate
+echo "160" /proc/sys/kernel/sched_group_upmigrate
 sleep 5
 
 echo '3' > /proc/sys/vm/drop_caches
@@ -221,8 +251,10 @@ fstrim /cache
 fstrim /system
 fstrim /data
 
+cmd power set-adaptive-power-saver-enabled false
+cmd power set-fixed-performance-mode-enabled true
 
-su -lp 2000 -c "cmd notification post -S bigtext -t 'Tololo ✅' 'Tag' '$(getprop ro.board.platform), Now that the meeting is over, I will go back to my code ahead of your modules.'"
+su -lp 2000 -c "cmd notification post -S bigtext -t 'Tololo ✅' 'Tag' '$(getprop ro.product.marketname), Now that the meeting is over, I will go back to my code ahead of your modules.'"
     exit 0
     
     
