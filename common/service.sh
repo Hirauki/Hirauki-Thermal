@@ -71,6 +71,9 @@ sleep 1
 find /sys/ -type f -name "*throttling*" | while IFS= read -r throttling; do
     [ -w "$throttling" ] && echo 0 > "$throttling" 2>/dev/null
 done
+getprop | awk -F '[][]' '/ro.*thermal/ {print $2}' | while read -r prop; do
+    resetprop -n "$prop" 0
+done
 # Disable Via Props
   if resetprop dalvik.vm.dexopt.thermal-cutoff | grep -q '2'; then
     resetprop -n dalvik.vm.dexopt.thermal-cutoff 0
