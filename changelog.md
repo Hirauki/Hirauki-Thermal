@@ -6,7 +6,8 @@
 - Changing kernel tweaks at service
 - rebase thermal from [@Hirauki](https://github.com/hirauki)
 - Bringback Zygote Preload scrissor for fix issue stuck scroll
-- Added `Touch Sampling Boost` and `some source` from [@al4uu](https://github.com/al4uu)
+- Added `Touch Sampling Boost` and `some sauce` from [@al4uu](https://github.com/al4uu)
+- Added `tweak render boosting` from [@Kazuyoo-stuff](https://github.com/Kazuyoo-stuff)
 
 ## 7.2
 - Update to 7.2 Wis'Adel
