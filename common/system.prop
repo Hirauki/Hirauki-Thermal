@@ -1,27 +1,32 @@
-# This file will be read by resetprop
-# Example: Change dpi
-# ro.sf.lcd_density=320
-
 #fps
 ro.vendor.dfps.enable=false
 
 # GPU Turbo Boost system properties
-debug.composition.type=gpu
+debug.gpu.renderscript.load_store_texture=1
 debug.enabletr=true
 debug.gr.numframebuffers=5
 debug.egl.buffcount=5
 debug.hwui.level=0
-debug.hwui.render_dirty_regions=false
 debug.overlayui.enable=1
 debug.performance.tuning=1
 hw3d.force=1
-persist.sys.composition.type=c2d
 persist.sys.ui.hw=1
 ro.config.enable.hw_accel=true
 ro.product.gpu.driver=1
 ro.fb.mode=1
-ro.sf.compbypass.enable=0
 video.accelerate.hw=1
+
+# HWUI
+debug.hwui.app_memory_policy=aggresive
+debug.hwui.optimized_texture_upload=true
+debug.hwui.use_gpu_pixel_buffers=1
+debug.hwui.disable_vsync=true
+
+# Reduce Texture
+ro.hwui.texture_cache_flushrate=0.4
+ro.texture_atlas_cache_override=0.25
+ro.texture_atlas_cache_entry_override=0.034
+ro.texture_atlas_map_pool_override=0.15
 
 # Disable 4xmsaa
 debug.egl.disable_msaa=true
