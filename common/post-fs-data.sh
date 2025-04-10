@@ -2,8 +2,6 @@
 MODDIR ${0%/*}
 # Set zram configurations
 setprop ro.vendor.qti.config.zram true
-mkswap /data/zram0
-swapon  /data/zram0
 # This script will be executed in post-fs-data mode
 if
 write() {
@@ -196,11 +194,9 @@ resetprop -n ro.hwui.text_large_cache_height 2048
 # LMK
 ####################################
 resetprop -n ro.lmk.debug false
-resetprop -n ro.lmk.log_stats false
-resetprop -n ro.lmk.critical_upgrade true
 resetprop -n ro.lmk.upgrade_pressure 40
 resetprop -n ro.lmk.downgrade_pressure 60
-resetprop -n ro.lmk.kill_heaviest_task true
+resetprop -n ro.lmk.kill_heaviest_task false
 
 ####################################
 # Tombstone (by @modulostk)
