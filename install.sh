@@ -98,7 +98,6 @@ set_permissions() {
 }
 
 # You can add more functions to assist your custom script code
-# Construct your own list here
 REPLACE="
 /system/vendor/etc/thermal-engine-map.conf
 /system/vendor/etc/thermal-engine.conf
