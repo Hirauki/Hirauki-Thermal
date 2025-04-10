@@ -205,9 +205,6 @@ resetprop -n ro.lmk.kill_heaviest_task false
 resetprop -n tombstoned.max_tombstone_count 0
 # Max anr tombstone count [/data/anr]
 resetprop -n tombstoned.max_anr_count 0
-#dropbox disabler
-settings put global dropbox:dumpsys:procstats disabled
-settings put global dropbox:dumpsys:usagestats disabled
 while :
 do
     sf=$(service list | grep -c "SurfaceFlinger:")
