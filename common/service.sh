@@ -104,9 +104,6 @@ sleep 1
     for therm_serv in $thermal_prop; do
         stop $therm_serv
     done
-    if [ -e /sys/kernel/fast_charge/force_fast_charge ]; then
-  echo "1" > /sys/kernel/fast_charge/force_fast_charge
-fi
 ext() {
     if [ -f "\$2" ]; then
         chmod 0666 "\$2"
@@ -114,7 +111,6 @@ ext() {
         chmod 0444 "\$2"
     fi
 }
-
 ext 6700000 /sys/class/power_supply/usb/current_max
 ext 6700000 /sys/class/power_supply/usb/hw_current_max
 ext 6700000 /sys/class/power_supply/usb/pd_current_max
